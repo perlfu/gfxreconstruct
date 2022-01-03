@@ -165,6 +165,18 @@ class EncodePNextStructGenerator(BaseGenerator):
 
     def endFile(self):
         """Method override."""
+        for struct in self.stype_values:
+            write(
+                '        case {}:'.format(self.stype_values[struct]),
+                file=self.outFile
+            )
+            write(
+                '            EncodeStructPtr(encoder, reinterpret_cast<const {}*>(base));'
+                .format(struct),
+                file=self.outFile
+            )
+            write('            break;', file=self.outFile)
+
         write('        }', file=self.outFile)
         write('    }', file=self.outFile)
         write('    else', file=self.outFile)
@@ -180,6 +192,92 @@ class EncodePNextStructGenerator(BaseGenerator):
         write('    }', file=self.outFile)
         write('}', file=self.outFile)
         self.newline()
+
+        write(
+            'std::vector<std::vector<uint8_t>> CopyPNextStructs(const void* value)',
+            file=self.outFile
+        )
+        write('{', file=self.outFile)
+        write('    std::vector<std::vector<uint8_t>> ret;', file=self.outFile)
+        write('    std::vector<uint8_t> pnext;', file=self.outFile)
+        write(
+            '    auto base = reinterpret_cast<const VkBaseInStructure*>(value);',
+            file=self.outFile
+        )
+        write('    while(base)', file=self.outFile)
+        write('    {', file=self.outFile)
+        write('        switch (base->sType)', file=self.outFile)
+        write('        {', file=self.outFile)
+        write('            default:', file=self.outFile)
+        write('            {', file=self.outFile)
+        write(
+            '                // pNext is unrecognized.  Write warning message to indicate it will be omitted from the capture and check to see if it points to a recognized value.',
+            file=self.outFile
+        )
+        write(
+            '                int32_t message_size = std::snprintf(nullptr, 0, "A pNext value with unrecognized VkStructureType = %d was omitted from the capture file, which may cause replay to fail.", base->sType);',
+            file=self.outFile
+        )
+        write(
+            '                std::unique_ptr<char[]> message = std::make_unique<char[]>(message_size + 1); // Add 1 for null-terminator.',
+            file=self.outFile
+        )
+        write(
+            '                std::snprintf(message.get(), (message_size + 1), "A pNext value with unrecognized VkStructureType = %d was omitted from the capture file, which may cause replay to fail.", base->sType);',
+            file=self.outFile
+        )
+        write(
+            '                VulkanCaptureManager::Get()->WriteDisplayMessageCmd(message.get());',
+            file=self.outFile
+        )
+        write(
+            '                GFXRECON_LOG_WARNING("%s", message.get());',
+            file=self.outFile
+        )
+        write('                break;', file=self.outFile)
+        write('            }', file=self.outFile)
+
+        for struct in self.stype_values:
+            write(
+                '        case {}:'.format(self.stype_values[struct]),
+                file=self.outFile
+            )
+            write('            {', file=self.outFile)
+            write(
+                '                pnext.resize(sizeof({}));'.format(struct),
+                file=self.outFile
+            )
+            write(
+                '                std::memcpy(pnext.data(), base, sizeof({}));'.
+                format(struct),
+                file=self.outFile
+            )
+            write(
+                '                ret.emplace_back(pnext);', file=self.outFile
+            )
+            write('                break;', file=self.outFile)
+            write('            }', file=self.outFile)
+
+        write('        }', file=self.outFile)
+        write('        base = base->pNext;', file=self.outFile)
+        write('    }', file=self.outFile)
+        write('    auto size = ret.size();', file=self.outFile)
+        write('    for(size_t i = 1 ; i < size ; ++i)', file=self.outFile)
+        write('    {', file=self.outFile)
+        write(
+            '        auto pnext = reinterpret_cast<VkBaseInStructure*>(ret[i].data());',
+            file=self.outFile
+        )
+        write(
+            '        auto last_pnext = reinterpret_cast<VkBaseInStructure*>(ret[i-1].data());',
+            file=self.outFile
+        )
+        write('        last_pnext->pNext = pnext;', file=self.outFile)
+        write('    }', file=self.outFile)
+        write('    return std::move(ret);', file=self.outFile)
+        write('}', file=self.outFile)
+        self.newline()
+
         write('GFXRECON_END_NAMESPACE(encode)', file=self.outFile)
         write('GFXRECON_END_NAMESPACE(gfxrecon)', file=self.outFile)
 
@@ -201,18 +299,3 @@ class EncodePNextStructGenerator(BaseGenerator):
         if self.stype_values:
             return True
         return False
-
-    def generate_feature(self):
-        """Performs C++ code generation for the feature."""
-        for struct in self.stype_values:
-            write(
-                '        case {}:'.format(self.stype_values[struct]),
-                file=self.outFile
-            )
-            write(
-                '            EncodeStructPtr(encoder, reinterpret_cast<const {}*>(base));'
-                .format(struct),
-                file=self.outFile
-            )
-            write('            break;', file=self.outFile)
-        self.stype_values = dict()

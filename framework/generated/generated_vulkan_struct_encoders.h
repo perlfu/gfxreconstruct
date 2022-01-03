@@ -41,6 +41,7 @@ GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(encode)
 
 void EncodePNextStruct(ParameterEncoder* encoder, const void* value);
+std::vector<std::vector<uint8_t>> CopyPNextStructs(const void* value);
 
 void EncodeStruct(ParameterEncoder* encoder, const VkExtent2D& value);
 void EncodeStruct(ParameterEncoder* encoder, const VkExtent3D& value);

@@ -90,6 +90,10 @@ class VulkanStructEncodersHeaderGenerator(BaseGenerator):
             'void EncodePNextStruct(ParameterEncoder* encoder, const void* value);',
             file=self.outFile
         )
+        write(
+            'std::vector<std::vector<uint8_t>> CopyPNextStructs(const void* value);',
+            file=self.outFile
+        )
 
     def endFile(self):
         """Method override."""

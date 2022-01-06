@@ -174,11 +174,12 @@ struct DeviceMemoryWrapper : public HandleWrapper<VkDeviceMemory>
 
 struct BufferWrapper : public HandleWrapper<VkBuffer>
 {
-    DeviceWrapper*   bind_device{ nullptr };
-    format::HandleId bind_memory_id{ format::kNullHandleId };
-    VkDeviceSize     bind_offset{ 0 };
-    uint32_t         queue_family_index{ 0 };
-    VkDeviceSize     created_size{ 0 };
+    DeviceWrapper*                    bind_device{ nullptr };
+    std::vector<std::vector<uint8_t>> bind_pnexts;
+    format::HandleId                  bind_memory_id{ format::kNullHandleId };
+    VkDeviceSize                      bind_offset{ 0 };
+    uint32_t                          queue_family_index{ 0 };
+    VkDeviceSize                      created_size{ 0 };
 
     // State tracking info for buffers with device addresses.
     format::HandleId device_id{ format::kNullHandleId };
@@ -187,18 +188,20 @@ struct BufferWrapper : public HandleWrapper<VkBuffer>
 
 struct ImageWrapper : public HandleWrapper<VkImage>
 {
-    DeviceWrapper*        bind_device{ nullptr };
-    format::HandleId      bind_memory_id{ format::kNullHandleId };
-    VkDeviceSize          bind_offset{ 0 };
-    uint32_t              queue_family_index{ 0 };
-    VkImageType           image_type{ VK_IMAGE_TYPE_2D };
-    VkFormat              format{ VK_FORMAT_UNDEFINED };
-    VkExtent3D            extent{ 0, 0, 0 };
-    uint32_t              mip_levels{ 0 };
-    uint32_t              array_layers{ 0 };
-    VkSampleCountFlagBits samples{};
-    VkImageTiling         tiling{};
-    VkImageLayout         current_layout{ VK_IMAGE_LAYOUT_UNDEFINED };
+    DeviceWrapper*                    bind_device{ nullptr };
+    std::vector<std::vector<uint8_t>> bind_pnexts;
+    format::HandleId                  bind_memory_id{ format::kNullHandleId };
+    VkDeviceSize                      bind_offset{ 0 };
+    uint32_t                          queue_family_index{ 0 };
+    VkImageType                       image_type{ VK_IMAGE_TYPE_2D };
+    VkFormat                          format{ VK_FORMAT_UNDEFINED };
+    VkExtent3D                        extent{ 0, 0, 0 };
+    uint32_t                          mip_levels{ 0 };
+    uint32_t                          array_layers{ 0 };
+    VkSampleCountFlagBits             samples{};
+    VkImageTiling                     tiling{};
+    VkImageLayout                     current_layout{ VK_IMAGE_LAYOUT_UNDEFINED };
+    bool                              is_swapchain{ false };
 };
 
 struct BufferViewWrapper : public HandleWrapper<VkBufferView>

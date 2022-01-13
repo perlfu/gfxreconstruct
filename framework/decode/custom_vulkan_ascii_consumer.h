@@ -191,6 +191,89 @@ inline std::string PointerDecoderArrayToString(const CountType&    countObj,
         [&](uint32_t i) { return ToString(pObjs->GetPointer()[i], toStringFlags, tabCount + 1, tabSize); });
 }
 
+inline std::string PointerDecoderArrayToString2(const uint32_t&                                      countObj,
+                                                StructPointerDecoder<Decoded_VkBindImageMemoryInfo>* pObjs,
+                                                util::ToStringFlags toStringFlags = util::kToString_Default,
+                                                uint32_t            tabCount      = 0,
+                                                uint32_t            tabSize       = 4)
+{
+    using namespace util;
+    return ArrayToString(
+        GetCount(countObj),
+        pObjs,
+        toStringFlags,
+        tabCount,
+        tabSize,
+        [&]() { return pObjs && !pObjs->IsNull(); },
+        [&](uint32_t i) {
+            auto                  a  = pObjs->GetMetaStructPointer()[i];
+            auto                  aa = pObjs->GetPointer()[i];
+            VkBindImageMemoryInfo aaa;
+            aaa.sType        = aa.sType;
+            aaa.pNext        = aa.pNext;
+            auto pNext1      = (VkBindImageMemorySwapchainInfoKHR*)a.pNext->GetPointer();
+            auto pNext2      = (VkBindImageMemorySwapchainInfoKHR*)a.pNext->GetMetaStructPointer();
+            auto pNext3      = (VkBindImageMemorySwapchainInfoKHR*)aa.pNext;
+            aaa.image        = (VkImage)a.image;
+            aaa.memory       = (VkDeviceMemory)a.memory;
+            aaa.memoryOffset = aa.memoryOffset;
+            return ToString(aaa, toStringFlags, tabCount + 1, tabSize);
+        });
+}
+
+inline std::string PointerDecoderArrayToString2(const uint32_t& countObj,
+                                                StructPointerDecoder<Decoded_VkBindImageMemorySwapchainInfoKHR>* pObjs,
+                                                util::ToStringFlags toStringFlags = util::kToString_Default,
+                                                uint32_t            tabCount      = 0,
+                                                uint32_t            tabSize       = 4)
+{
+    using namespace util;
+    return ArrayToString(
+        GetCount(countObj),
+        pObjs,
+        toStringFlags,
+        tabCount,
+        tabSize,
+        [&]() { return pObjs && !pObjs->IsNull(); },
+        [&](uint32_t i) {
+            auto                              a  = pObjs->GetMetaStructPointer()[i];
+            auto                              aa = pObjs->GetPointer()[i];
+            VkBindImageMemorySwapchainInfoKHR aaa;
+            aaa.sType      = aa.sType;
+            aaa.pNext      = aa.pNext;
+            aaa.swapchain  = (VkSwapchainKHR)a.swapchain;
+            aaa.imageIndex = aa.imageIndex;
+            return ToString(aaa, toStringFlags, tabCount + 1, tabSize);
+        });
+}
+
+inline std::string PointerDecoderArrayToString2(const uint32_t&                                       countObj,
+                                                StructPointerDecoder<Decoded_VkBindBufferMemoryInfo>* pObjs,
+                                                util::ToStringFlags toStringFlags = util::kToString_Default,
+                                                uint32_t            tabCount      = 0,
+                                                uint32_t            tabSize       = 4)
+{
+    using namespace util;
+    return ArrayToString(
+        GetCount(countObj),
+        pObjs,
+        toStringFlags,
+        tabCount,
+        tabSize,
+        [&]() { return pObjs && !pObjs->IsNull(); },
+        [&](uint32_t i) {
+            auto                   a  = pObjs->GetMetaStructPointer()[i];
+            auto                   aa = pObjs->GetPointer()[i];
+            VkBindBufferMemoryInfo aaa;
+            aaa.sType        = aa.sType;
+            aaa.pNext        = aa.pNext;
+            aaa.buffer       = (VkBuffer)a.buffer;
+            aaa.memory       = (VkDeviceMemory)a.memory;
+            aaa.memoryOffset = aa.memoryOffset;
+            return ToString(aaa, toStringFlags, tabCount + 1, tabSize);
+        });
+}
+
 template <typename CountType, typename PointerDecoderType>
 inline std::string EnumPointerDecoderArrayToString(const CountType&    countObj,
                                                    PointerDecoderType* pObjs,

@@ -2827,7 +2827,7 @@ void VulkanAsciiConsumer::Process_vkBindBufferMemory2(
             FieldToString(strStrm, true, "return", toStringFlags, tabCount, tabSize, '"' + ToString(returnValue, toStringFlags, tabCount, tabSize) + '"');
             FieldToString(strStrm, false, "device", toStringFlags, tabCount, tabSize, HandleIdToString(device));
             FieldToString(strStrm, false, "bindInfoCount", toStringFlags, tabCount, tabSize, ToString(bindInfoCount, toStringFlags, tabCount, tabSize));
-            FieldToString(strStrm, false, "pBindInfos", toStringFlags, tabCount, tabSize, PointerDecoderArrayToString(bindInfoCount, pBindInfos, toStringFlags, tabCount, tabSize));
+            FieldToString(strStrm, false, "pBindInfos", toStringFlags, tabCount, tabSize, PointerDecoderArrayToString2(bindInfoCount, pBindInfos, toStringFlags, tabCount, tabSize));
         }
     );
 }
@@ -2848,7 +2848,7 @@ void VulkanAsciiConsumer::Process_vkBindImageMemory2(
             FieldToString(strStrm, true, "return", toStringFlags, tabCount, tabSize, '"' + ToString(returnValue, toStringFlags, tabCount, tabSize) + '"');
             FieldToString(strStrm, false, "device", toStringFlags, tabCount, tabSize, HandleIdToString(device));
             FieldToString(strStrm, false, "bindInfoCount", toStringFlags, tabCount, tabSize, ToString(bindInfoCount, toStringFlags, tabCount, tabSize));
-            FieldToString(strStrm, false, "pBindInfos", toStringFlags, tabCount, tabSize, PointerDecoderArrayToString(bindInfoCount, pBindInfos, toStringFlags, tabCount, tabSize));
+            FieldToString(strStrm, false, "pBindInfos", toStringFlags, tabCount, tabSize, PointerDecoderArrayToString2(bindInfoCount, pBindInfos, toStringFlags, tabCount, tabSize));
         }
     );
 }

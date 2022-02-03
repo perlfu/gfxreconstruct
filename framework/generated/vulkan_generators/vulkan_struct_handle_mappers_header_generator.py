@@ -92,6 +92,7 @@ class VulkanStructHandleMappersHeaderGenerator(
         write(
             '#include "decode/vulkan_object_info_table.h"', file=self.outFile
         )
+        write('#include "graphics/vulkan_device_address_map.h"', file=self.outFile)
         write('#include "format/platform_types.h"', file=self.outFile)
         write(
             '#include "generated/generated_vulkan_struct_decoders_forward.h"',

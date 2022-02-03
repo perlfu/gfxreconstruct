@@ -413,11 +413,11 @@ class VulkanReplayConsumerBodyGenerator(
                         ):
                             preexpr.append(expr)
                             if value.is_array:
-                                expr = 'MapStructArrayHandles({name}->GetMetaStructPointer(), {name}->GetLength(), GetObjectInfoTable());'.format(
+                                expr = 'MapStructArrayHandles({name}->GetMetaStructPointer(), {name}->GetLength(), GetObjectInfoTable(), GetDevAddrTable());'.format(
                                     name=value.name
                                 )
                             else:
-                                expr = 'MapStructHandles({}->GetMetaStructPointer(), GetObjectInfoTable());'.format(
+                                expr = 'MapStructHandles({}->GetMetaStructPointer(), GetObjectInfoTable(), GetDevAddrTable());'.format(
                                     value.name
                                 )
                 else:
@@ -540,7 +540,7 @@ class VulkanReplayConsumerBodyGenerator(
                                             )
                                         )
                                     postexpr.append(
-                                        'AddStructArrayHandles<Decoded_{basetype}>({}, {paramname}->GetMetaStructPointer(), {paramname}->GetLength(), {}, {}, &GetObjectInfoTable());'
+                                        'AddStructArrayHandles<Decoded_{basetype}>({}, {paramname}->GetMetaStructPointer(), {paramname}->GetLength(), {}, {}, &GetObjectInfoTable(), GetDevAddrTable());'
                                         .format(
                                             self.get_parent_id(value, values),
                                             arg_name,
@@ -564,7 +564,7 @@ class VulkanReplayConsumerBodyGenerator(
                                             )
                                         )
                                     postexpr.append(
-                                        'AddStructArrayHandles<Decoded_{basetype}>({}, {paramname}->GetMetaStructPointer(), {paramname}->GetLength(), {paramname}->GetOutputPointer(), {}, &GetObjectInfoTable());'
+                                        'AddStructArrayHandles<Decoded_{basetype}>({}, {paramname}->GetMetaStructPointer(), {paramname}->GetLength(), {paramname}->GetOutputPointer(), {}, &GetObjectInfoTable(), GetDevAddrTable());'
                                         .format(
                                             self.get_parent_id(value, values),
                                             length_name,
@@ -680,7 +680,7 @@ class VulkanReplayConsumerBodyGenerator(
                                                 )
                                             )
                                         postexpr.append(
-                                            'AddStructHandles<Decoded_{basetype}>({}, {name}->GetMetaStructPointer(), {}, &GetObjectInfoTable());'
+                                            'AddStructHandles<Decoded_{basetype}>({}, {name}->GetMetaStructPointer(), {}, &GetObjectInfoTable(), &GetDevAddrTable());'
                                             .format(
                                                 self.get_parent_id(
                                                     value, values
@@ -700,7 +700,7 @@ class VulkanReplayConsumerBodyGenerator(
                                                 )
                                             )
                                         postexpr.append(
-                                            'AddStructHandles<Decoded_{basetype}>({}, {name}->GetMetaStructPointer(), {name}->GetOutputPointer(), &GetObjectInfoTable());'
+                                            'AddStructHandles<Decoded_{basetype}>({}, {name}->GetMetaStructPointer(), {name}->GetOutputPointer(), &GetObjectInfoTable(), &GetDevAddrTable());'
                                             .format(
                                                 self.get_parent_id(
                                                     value, values

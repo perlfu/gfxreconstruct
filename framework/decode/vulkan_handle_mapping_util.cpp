@@ -29,6 +29,21 @@ GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
 GFXRECON_BEGIN_NAMESPACE(handle_mapping)
 
+void MapDeviceAddress(VkDeviceAddress& address, const graphics::VkDeviceAddressMap& dev_addr_map)
+{
+    address = dev_addr_map.Map(address);
+}
+
+void MapDeviceAddresses(VkDeviceAddress*                    addresses,
+                        size_t                              addresses_len,
+                        const graphics::VkDeviceAddressMap& dev_addr_map)
+{
+    for (size_t i = 0; i < addresses_len; ++i)
+    {
+        MapDeviceAddress(addresses[i], dev_addr_map);
+    }
+}
+
 uint64_t MapHandle(uint64_t object, VkObjectType object_type, const VulkanObjectInfoTable& object_info_table)
 {
     switch (object_type)

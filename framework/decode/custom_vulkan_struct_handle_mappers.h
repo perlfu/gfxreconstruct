@@ -26,6 +26,7 @@
 #include "decode/custom_vulkan_struct_decoders_forward.h"
 #include "decode/pnext_node.h"
 #include "decode/vulkan_object_info_table.h"
+#include "graphics/vulkan_device_address_map.h"
 #include "util/defines.h"
 
 #include "vulkan/vulkan.h"
@@ -33,11 +34,14 @@
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
 
-void MapStructHandles(VkDescriptorType               type,
-                      Decoded_VkDescriptorImageInfo* wrapper,
-                      const VulkanObjectInfoTable&   object_info_table);
+void MapStructHandles(VkDescriptorType                    type,
+                      Decoded_VkDescriptorImageInfo*      wrapper,
+                      const VulkanObjectInfoTable&        object_info_table,
+                      const graphics::VkDeviceAddressMap& dev_addr_map);
 
-void MapStructHandles(Decoded_VkWriteDescriptorSet* wrapper, const VulkanObjectInfoTable& object_info_table);
+void MapStructHandles(Decoded_VkWriteDescriptorSet*       wrapper,
+                      const VulkanObjectInfoTable&        object_info_table,
+                      const graphics::VkDeviceAddressMap& dev_addr_map);
 
 GFXRECON_END_NAMESPACE(decode)
 GFXRECON_END_NAMESPACE(gfxrecon)

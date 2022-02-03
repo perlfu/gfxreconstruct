@@ -1539,6 +1539,16 @@ PFN_vkCreateDevice VulkanReplayConsumerBase::GetCreateDeviceProc(VkPhysicalDevic
     return create_device_procs_[encode::GetDispatchKey(physical_device)];
 }
 
+void VulkanReplayConsumerBase::MapDeviceAddress(VkDeviceAddress& address)
+{
+    handle_mapping::MapDeviceAddress(address, dev_addr_map_);
+}
+
+void VulkanReplayConsumerBase::MapDeviceAddresses(VkDeviceAddress* addresses, size_t addresses_len)
+{
+    handle_mapping::MapDeviceAddresses(addresses, addresses_len, dev_addr_map_);
+}
+
 const encode::InstanceTable* VulkanReplayConsumerBase::GetInstanceTable(const void* handle) const
 {
     auto table = instance_tables_.find(encode::GetDispatchKey(handle));
@@ -5785,7 +5795,8 @@ void VulkanReplayConsumerBase::MapDescriptorUpdateTemplateHandles(
             Decoded_VkDescriptorImageInfo* structs = decoder->GetImageInfoMetaStructPointer();
             for (size_t i = 0; i < image_info_count; ++i)
             {
-                MapStructHandles(update_template_info->descriptor_image_types[i], &structs[i], object_info_table_);
+                MapStructHandles(
+                    update_template_info->descriptor_image_types[i], &structs[i], object_info_table_, dev_addr_map_);
             }
         }
         else
@@ -5796,14 +5807,16 @@ void VulkanReplayConsumerBase::MapDescriptorUpdateTemplateHandles(
             Decoded_VkDescriptorImageInfo* structs = decoder->GetImageInfoMetaStructPointer();
             for (size_t i = 0; i < image_info_count; ++i)
             {
-                MapStructHandles(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &structs[i], object_info_table_);
+                MapStructHandles(
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &structs[i], object_info_table_, dev_addr_map_);
             }
         }
     }
 
     if (buffer_info_count > 0)
     {
-        MapStructArrayHandles(decoder->GetBufferInfoMetaStructPointer(), buffer_info_count, object_info_table_);
+        MapStructArrayHandles(
+            decoder->GetBufferInfoMetaStructPointer(), buffer_info_count, object_info_table_, dev_addr_map_);
     }
 
     if (texel_buffer_view_count > 0)

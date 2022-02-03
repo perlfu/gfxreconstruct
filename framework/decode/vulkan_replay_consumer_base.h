@@ -169,6 +169,14 @@ class VulkanReplayConsumerBase : public VulkanConsumer
                                                               DescriptorUpdateTemplateDecoder* pData) override;
 
   protected:
+    void MapDeviceAddress(VkDeviceAddress& address);
+
+    void MapDeviceAddresses(VkDeviceAddress* addresses, size_t addresses_len);
+
+    const graphics::VkDeviceAddressMap& GetDevAddrTable() const { return dev_addr_map_; }
+
+    graphics::VkDeviceAddressMap& GetDevAddrTable() { return dev_addr_map_; }
+
     const VulkanObjectInfoTable& GetObjectInfoTable() const { return object_info_table_; }
 
     VulkanObjectInfoTable& GetObjectInfoTable() { return object_info_table_; }
@@ -995,6 +1003,7 @@ class VulkanReplayConsumerBase : public VulkanConsumer
     std::string                                                      screenshot_file_prefix_;
     int32_t                                                          create_surface_count_;
     graphics::FpsInfo*                                               fps_info_;
+    graphics::VkDeviceAddressMap                                     dev_addr_map_;
 
     // Used to track if any shadow sync objects are active to avoid checking if not needed
     std::unordered_set<VkSemaphore> shadow_semaphores_;

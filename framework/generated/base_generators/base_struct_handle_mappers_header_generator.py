@@ -32,8 +32,8 @@ class BaseStructHandleMappersHeaderGenerator():
         platform_type = 'Vulkan'
         map_types = 'Handles'
         map_type = 'Handle'
-        map_table = ''
-        map_object = ''
+        map_table = ', const graphics::VkDeviceAddressMap& dev_addr_map'
+        map_object = ', dev_addr_map'
 
         is_dx12_class = self.is_dx12_class()
         if is_dx12_class:
@@ -46,7 +46,7 @@ class BaseStructHandleMappersHeaderGenerator():
         if not is_dx12_class:
             self.newline()
             write(
-                'void MapPNextStructHandles(const void* value, void* wrapper, const VulkanObjectInfoTable& object_info_table);',
+                'void MapPNextStructHandles(const void* value, void* wrapper, const VulkanObjectInfoTable& object_info_table, const graphics::VkDeviceAddressMap& dev_addr_map);',
                 file=self.outFile
             )
 
@@ -103,7 +103,7 @@ class BaseStructHandleMappersHeaderGenerator():
         write('        for (size_t i = 0; i < len; ++i)', file=self.outFile)
         write('        {', file=self.outFile)
         write(
-            '            AddStruct{}(parent_id, &id_wrappers[i], &handle_structs[i], object_info_table);'
+            '            AddStruct{}(parent_id, &id_wrappers[i], &handle_structs[i], object_info_table, dev_addr_map);'
             .format(map_types),
             file=self.outFile
         )
@@ -148,7 +148,7 @@ class BaseStructHandleMappersHeaderGenerator():
         """Performs C++ code generation for the feature."""
         platform_type = 'Vulkan'
         map_type = 'Handles'
-        map_table = ''
+        map_table = ', const graphics::VkDeviceAddressMap& dev_addr_map'
         if self.is_dx12_class():
             platform_type = 'Dx12'
             map_type = 'Objects'

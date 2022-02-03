@@ -24,6 +24,7 @@
 #define GFXRECON_DECODE_VULKAN_HANDLE_MAPPING_UTIL_H
 
 #include "decode/vulkan_object_info_table.h"
+#include "graphics/vulkan_device_address_map.h"
 #include "format/format.h"
 #include "generated/generated_vulkan_struct_decoders.h"
 #include "util/defines.h"
@@ -36,6 +37,12 @@
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
 GFXRECON_BEGIN_NAMESPACE(handle_mapping)
+
+void MapDeviceAddress(VkDeviceAddress& address, const graphics::VkDeviceAddressMap& dev_addr_map);
+
+void MapDeviceAddresses(VkDeviceAddress*                    addresses,
+                        size_t                              addresses_len,
+                        const graphics::VkDeviceAddressMap& dev_addr_map);
 
 template <typename T>
 static typename T::HandleType MapHandle(format::HandleId             id,

@@ -32,9 +32,10 @@
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
 
-void MapStructHandles(VkDescriptorType               type,
-                      Decoded_VkDescriptorImageInfo* wrapper,
-                      const VulkanObjectInfoTable&   object_info_table)
+void MapStructHandles(VkDescriptorType                    type,
+                      Decoded_VkDescriptorImageInfo*      wrapper,
+                      const VulkanObjectInfoTable&        object_info_table,
+                      const graphics::VkDeviceAddressMap& dev_addr_map)
 {
     if ((wrapper != nullptr) && (wrapper->decoded_value != nullptr))
     {
@@ -55,7 +56,9 @@ void MapStructHandles(VkDescriptorType               type,
     }
 }
 
-void MapStructHandles(Decoded_VkWriteDescriptorSet* wrapper, const VulkanObjectInfoTable& object_mapper)
+void MapStructHandles(Decoded_VkWriteDescriptorSet*       wrapper,
+                      const VulkanObjectInfoTable&        object_mapper,
+                      const graphics::VkDeviceAddressMap& dev_addr_map)
 {
     if ((wrapper != nullptr) && (wrapper->decoded_value != nullptr))
     {
@@ -63,7 +66,8 @@ void MapStructHandles(Decoded_VkWriteDescriptorSet* wrapper, const VulkanObjectI
 
         if (wrapper->pNext)
         {
-            MapPNextStructHandles(wrapper->pNext->GetPointer(), wrapper->pNext->GetMetaStructPointer(), object_mapper);
+            MapPNextStructHandles(
+                wrapper->pNext->GetPointer(), wrapper->pNext->GetMetaStructPointer(), object_mapper, dev_addr_map);
         }
 
         value->dstSet = handle_mapping::MapHandle<DescriptorSetInfo>(
@@ -82,7 +86,7 @@ void MapStructHandles(Decoded_VkWriteDescriptorSet* wrapper, const VulkanObjectI
                     Decoded_VkDescriptorImageInfo* structs = wrapper->pImageInfo->GetMetaStructPointer();
                     for (size_t i = 0; i < len; ++i)
                     {
-                        MapStructHandles(value->descriptorType, &structs[i], object_mapper);
+                        MapStructHandles(value->descriptorType, &structs[i], object_mapper, dev_addr_map);
                     }
                 }
                 break;
@@ -90,8 +94,10 @@ void MapStructHandles(Decoded_VkWriteDescriptorSet* wrapper, const VulkanObjectI
             case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
             case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
             case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
-                MapStructArrayHandles<Decoded_VkDescriptorBufferInfo>(
-                    wrapper->pBufferInfo->GetMetaStructPointer(), wrapper->pBufferInfo->GetLength(), object_mapper);
+                MapStructArrayHandles<Decoded_VkDescriptorBufferInfo>(wrapper->pBufferInfo->GetMetaStructPointer(),
+                                                                      wrapper->pBufferInfo->GetLength(),
+                                                                      object_mapper,
+                                                                      dev_addr_map);
                 break;
             case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
             case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:

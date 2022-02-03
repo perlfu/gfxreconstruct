@@ -74,6 +74,11 @@
     "vkCreateRayTracingPipelinesKHR": "OverrideCreateRayTracingPipelinesKHR",
     "vkGetBufferDeviceAddress": "OverrideGetBufferDeviceAddress",
     "vkGetBufferDeviceAddressKHR": "OverrideGetBufferDeviceAddress",
+    "vkGetBufferDeviceAddressEXT": "OverrideGetBufferDeviceAddress",
+    "vkGetBufferOpaqueCaptureAddress": "OverrideGetBufferOpaqueCaptureAddress",
+    "vkGetBufferOpaqueCaptureAddressKHR": "OverrideGetBufferOpaqueCaptureAddress",
+    "vkGetDeviceMemoryOpaqueCaptureAddress": "OverrideGetDeviceMemoryOpaqueCaptureAddress",
+    "vkGetDeviceMemoryOpaqueCaptureAddressKHR": "OverrideGetDeviceMemoryOpaqueCaptureAddress",
     "vkGetAccelerationStructureDeviceAddressKHR": "OverrideGetAccelerationStructureDeviceAddressKHR",
     "vkGetRayTracingShaderGroupHandlesKHR": "OverrideGetRayTracingShaderGroupHandlesKHR"
   }

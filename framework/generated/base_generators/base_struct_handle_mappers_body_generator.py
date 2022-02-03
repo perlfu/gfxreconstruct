@@ -176,12 +176,14 @@ class BaseStructHandleMappersBodyGenerator():
         base_type = 'object'
         object_info_table_get = ''
         given_object = ', gpu_va_map'
+        mapping_type = 'object'
         is_dx12_class = self.is_dx12_class()
         if not is_dx12_class:
             map_types = 'Handles'
             map_type = 'Handle'
             base_type = 'handle'
             given_object = ', dev_addr_map'
+            mapping_type = 'handle'
 
         body = ''
         for member in handle_members:
@@ -197,21 +199,21 @@ class BaseStructHandleMappersBodyGenerator():
                 if member.is_array:
                     body += '    if ({0})\n'\
                             '    {{\n'\
-                            '        object_mapping::{2}(value->{0}->GetPointer(), {1}, {3});\n'\
+                            '        {4}_mapping::{2}(value->{0}->GetPointer(), {1}, {3});\n'\
                             '    }}\n'.format(
-                        member.name, member.array_length, map_func[1], map_func[2]
+                        member.name, member.array_length, map_func[1], map_func[2], mapping_type
                     )
                 else:
                     if member.is_pointer:
                         body += '    if ({0})\n'\
                                 '    {{\n'\
-                                '        object_mapping::{1}(value->{0}->GetPointer(), {2});\n'\
+                                '        {3}_mapping::{1}(value->{0}->GetPointer(), {2});\n'\
                                 '    }}\n'.format(
-                            member.name, map_func[0], map_func[2]
+                            member.name, map_func[0], map_func[2], mapping_type
                         )
                     else:
-                        body += '        object_mapping::{}(value->{}, {});\n'.format(
-                            map_func[0], member.name, map_func[2]
+                        body += '        {}_mapping::{}(value->{}, {});\n'.format(
+                            mapping_type, map_func[0], member.name, map_func[2]
                         )
             elif self.is_struct(member.base_type):
                 # This is a struct that includes handles.

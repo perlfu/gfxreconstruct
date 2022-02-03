@@ -287,7 +287,9 @@ class BaseGenerator(OutputGenerator):
             'descriptor_map'
         ],
         'D3D12_GPU_VIRTUAL_ADDRESS':
-        ['MapGpuVirtualAddress', 'MapGpuVirtualAddresses', 'gpu_va_map']
+        ['MapGpuVirtualAddress', 'MapGpuVirtualAddresses', 'gpu_va_map'],
+        'VkDeviceAddress':
+        ['MapDeviceAddress', 'MapDeviceAddresses', 'dev_addr_map']
     }
 
     # Dispatchable handle types.

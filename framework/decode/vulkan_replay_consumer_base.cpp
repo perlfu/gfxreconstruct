@@ -3577,6 +3577,7 @@ VkResult VulkanReplayConsumerBase::OverrideAllocateMemory(
 
             memory_info->allocator      = allocator;
             memory_info->allocator_data = allocator_data;
+            memory_info->size           = replay_allocate_info->allocationSize;
         }
         else if (original_result == VK_SUCCESS)
         {
@@ -4023,6 +4024,7 @@ VulkanReplayConsumerBase::OverrideCreateBuffer(PFN_vkCreateBuffer               
 
         buffer_info->allocator_data = allocator_data;
         buffer_info->usage          = replay_create_info->usage;
+        buffer_info->size           = replay_create_info->size;
 
         if ((replay_create_info->sharingMode == VK_SHARING_MODE_CONCURRENT) &&
             (replay_create_info->queueFamilyIndexCount > 0) && (replay_create_info->pQueueFamilyIndices != nullptr))
@@ -5362,6 +5364,7 @@ VkResult VulkanReplayConsumerBase::OverrideCreateWin32SurfaceKHR(
 
 VkBool32 VulkanReplayConsumerBase::OverrideGetPhysicalDeviceWin32PresentationSupportKHR(
     PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR func,
+    VkBool32                                           original_result,
     const PhysicalDeviceInfo*                          physical_device_info,
     uint32_t                                           queueFamilyIndex)
 {
@@ -5401,6 +5404,7 @@ VkResult VulkanReplayConsumerBase::OverrideCreateXcbSurfaceKHR(
 
 VkBool32 VulkanReplayConsumerBase::OverrideGetPhysicalDeviceXcbPresentationSupportKHR(
     PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR func,
+    VkBool32                                         original_result,
     const PhysicalDeviceInfo*                        physical_device_info,
     uint32_t                                         queueFamilyIndex,
     xcb_connection_t*                                connection,
@@ -5444,6 +5448,7 @@ VkResult VulkanReplayConsumerBase::OverrideCreateXlibSurfaceKHR(
 
 VkBool32 VulkanReplayConsumerBase::OverrideGetPhysicalDeviceXlibPresentationSupportKHR(
     PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR func,
+    VkBool32                                          original_result,
     const PhysicalDeviceInfo*                         physical_device_info,
     uint32_t                                          queueFamilyIndex,
     Display*                                          dpy,
@@ -5487,6 +5492,7 @@ VkResult VulkanReplayConsumerBase::OverrideCreateWaylandSurfaceKHR(
 
 VkBool32 VulkanReplayConsumerBase::OverrideGetPhysicalDeviceWaylandPresentationSupportKHR(
     PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR func,
+    VkBool32                                             original_result,
     const PhysicalDeviceInfo*                            physical_device_info,
     uint32_t                                             queueFamilyIndex,
     struct wl_display*                                   display)
@@ -5586,7 +5592,14 @@ VkResult VulkanReplayConsumerBase::OverrideCreateAccelerationStructureKHR(
         result = device_table->CreateAccelerationStructureKHR(
             device, replay_create_info, GetAllocationCallbacks(pAllocator), replay_accel_struct);
     }
+    if ((result == VK_SUCCESS) && (replay_create_info != nullptr) && ((*replay_accel_struct) != VK_NULL_HANDLE))
+    {
+        auto accel_struct_info =
+            reinterpret_cast<AccelerationStructureKHRInfo*>(pAccelerationStructureKHR->GetConsumerData(0));
+        assert(accel_struct_info != nullptr);
 
+        accel_struct_info->size = replay_create_info->size;
+    }
     return result;
 }
 
@@ -5696,6 +5709,7 @@ VkResult VulkanReplayConsumerBase::OverrideCreateRayTracingPipelinesKHR(
 
 VkDeviceAddress VulkanReplayConsumerBase::OverrideGetBufferDeviceAddress(
     PFN_vkGetBufferDeviceAddress                                   func,
+    VkDeviceAddress                                                original_result,
     const DeviceInfo*                                              device_info,
     const StructPointerDecoder<Decoded_VkBufferDeviceAddressInfo>* pInfo)
 {
@@ -5718,11 +5732,84 @@ VkDeviceAddress VulkanReplayConsumerBase::OverrideGetBufferDeviceAddress(
     VkDevice                         device       = device_info->handle;
     const VkBufferDeviceAddressInfo* address_info = pInfo->GetPointer();
 
-    return func(device, address_info);
+    VkDeviceAddress new_device_address = func(device, address_info);
+
+    auto buffer_id   = pInfo->GetMetaStructPointer()->buffer;
+    auto buffer_info = GetObjectInfoTable().GetBufferInfo(buffer_id);
+    dev_addr_map_.Add(buffer_id, original_result, buffer_info->size, new_device_address);
+    return new_device_address;
 }
 
-void VulkanReplayConsumerBase::OverrideGetAccelerationStructureDeviceAddressKHR(
+uint64_t VulkanReplayConsumerBase::OverrideGetBufferOpaqueCaptureAddress(
+    PFN_vkGetBufferOpaqueCaptureAddress                            func,
+    uint64_t                                                       original_result,
+    const DeviceInfo*                                              device_info,
+    const StructPointerDecoder<Decoded_VkBufferDeviceAddressInfo>* pInfo)
+{
+    assert((device_info != nullptr) && (pInfo != nullptr) && !pInfo->IsNull() && (pInfo->GetPointer() != nullptr));
+
+    if (!device_info->property_feature_info.feature_bufferDeviceAddressCaptureReplay)
+    {
+        GFXRECON_LOG_ERROR_ONCE("The captured application used vkGetBufferOpaqueCaptureAddress, which requires the "
+                                "bufferDeviceAddressCaptureReplay feature for accurate capture and replay. The "
+                                "replay device does not support this feature, so replay may fail.");
+    }
+
+    if (!device_info->allocator->SupportsOpaqueDeviceAddresses())
+    {
+        GFXRECON_LOG_WARNING_ONCE("The captured application used vkGetBufferOpaqueCaptureAddress. The specified replay "
+                                  "option '-m rebind' may not "
+                                  "support the replay of captured device addresses, so replay may fail.");
+    }
+
+    VkDevice                         device       = device_info->handle;
+    const VkBufferDeviceAddressInfo* address_info = pInfo->GetPointer();
+
+    uint64_t new_device_address = func(device, address_info);
+
+    auto buffer_id   = pInfo->GetMetaStructPointer()->buffer;
+    auto buffer_info = GetObjectInfoTable().GetBufferInfo(buffer_id);
+    dev_addr_map_.Add(buffer_id, original_result, buffer_info->size, new_device_address);
+    return new_device_address;
+}
+
+uint64_t VulkanReplayConsumerBase::OverrideGetDeviceMemoryOpaqueCaptureAddress(
+    PFN_vkGetDeviceMemoryOpaqueCaptureAddress                                   func,
+    uint64_t                                                                    original_result,
+    const DeviceInfo*                                                           device_info,
+    const StructPointerDecoder<Decoded_VkDeviceMemoryOpaqueCaptureAddressInfo>* pInfo)
+{
+    assert((device_info != nullptr) && (pInfo != nullptr) && !pInfo->IsNull() && (pInfo->GetPointer() != nullptr));
+
+    if (!device_info->property_feature_info.feature_bufferDeviceAddressCaptureReplay)
+    {
+        GFXRECON_LOG_ERROR_ONCE(
+            "The captured application used vkGetDeviceMemoryOpaqueCaptureAddress, which requires the "
+            "bufferDeviceAddressCaptureReplay feature for accurate capture and replay. The "
+            "replay device does not support this feature, so replay may fail.");
+    }
+
+    if (!device_info->allocator->SupportsOpaqueDeviceAddresses())
+    {
+        GFXRECON_LOG_WARNING_ONCE("The captured application used vkGetDeviceMemoryOpaqueCaptureAddress. The specified "
+                                  "replay option '-m rebind' may not "
+                                  "support the replay of captured device addresses, so replay may fail.");
+    }
+
+    VkDevice                                      device       = device_info->handle;
+    const VkDeviceMemoryOpaqueCaptureAddressInfo* address_info = pInfo->GetPointer();
+
+    uint64_t new_device_address = func(device, address_info);
+
+    auto memory_id   = pInfo->GetMetaStructPointer()->memory;
+    auto memory_info = GetObjectInfoTable().GetDeviceMemoryInfo(memory_id);
+    dev_addr_map_.Add(memory_id, original_result, memory_info->size, new_device_address);
+    return new_device_address;
+}
+
+VkDeviceAddress VulkanReplayConsumerBase::OverrideGetAccelerationStructureDeviceAddressKHR(
     PFN_vkGetAccelerationStructureDeviceAddressKHR                                   func,
+    VkDeviceAddress                                                                  original_result,
     const DeviceInfo*                                                                device_info,
     const StructPointerDecoder<Decoded_VkAccelerationStructureDeviceAddressInfoKHR>* pInfo)
 {
@@ -5745,7 +5832,11 @@ void VulkanReplayConsumerBase::OverrideGetAccelerationStructureDeviceAddressKHR(
     VkDevice                                           device       = device_info->handle;
     const VkAccelerationStructureDeviceAddressInfoKHR* address_info = pInfo->GetPointer();
 
-    func(device, address_info);
+    VkDeviceAddress new_device_address = func(device, address_info);
+    auto            acc_id             = pInfo->GetMetaStructPointer()->accelerationStructure;
+    auto            acc_info           = GetObjectInfoTable().GetAccelerationStructureKHRInfo(acc_id);
+    dev_addr_map_.Add(acc_id, original_result, acc_info->size, new_device_address);
+    return new_device_address;
 }
 
 VkResult

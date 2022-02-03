@@ -128,7 +128,7 @@ class VulkanStructHandleMappersBodyGenerator(
         if not alias:
             if self.check_struct_member_handles(
                 typename, self.structs_with_handles,
-                self.structs_with_handle_ptrs
+                self.structs_with_handle_ptrs, False, self.structs_with_map_data 
             ):
                 # Track this struct if it can be present in a pNext chain, for generating the MapPNextStructHandles code.
                 parent_structs = typeinfo.elem.get('structextends')

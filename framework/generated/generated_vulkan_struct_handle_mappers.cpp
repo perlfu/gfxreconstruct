@@ -1117,6 +1117,16 @@ void MapStructHandles(Decoded_VkImageViewHandleInfoNVX* wrapper, const VulkanObj
     }
 }
 
+void MapStructHandles(Decoded_VkImageViewAddressPropertiesNVX* wrapper, const VulkanObjectInfoTable& object_info_table, const graphics::VkDeviceAddressMap& dev_addr_map)
+{
+    if ((wrapper != nullptr) && (wrapper->decoded_value != nullptr))
+    {
+        VkImageViewAddressPropertiesNVX* value = wrapper->decoded_value;
+
+        handle_mapping::MapDeviceAddress(value->deviceAddress, dev_addr_map);
+    }
+}
+
 void MapStructHandles(Decoded_VkWin32KeyedMutexAcquireReleaseInfoNV* wrapper, const VulkanObjectInfoTable& object_info_table, const graphics::VkDeviceAddressMap& dev_addr_map)
 {
     if ((wrapper != nullptr) && (wrapper->decoded_value != nullptr))
@@ -1283,6 +1293,16 @@ void MapStructHandles(Decoded_VkAccelerationStructureMemoryRequirementsInfoNV* w
     }
 }
 
+void MapStructHandles(Decoded_VkBufferDeviceAddressCreateInfoEXT* wrapper, const VulkanObjectInfoTable& object_info_table, const graphics::VkDeviceAddressMap& dev_addr_map)
+{
+    if ((wrapper != nullptr) && (wrapper->decoded_value != nullptr))
+    {
+        VkBufferDeviceAddressCreateInfoEXT* value = wrapper->decoded_value;
+
+        handle_mapping::MapDeviceAddress(value->deviceAddress, dev_addr_map);
+    }
+}
+
 void MapStructHandles(Decoded_VkGraphicsShaderGroupCreateInfoNV* wrapper, const VulkanObjectInfoTable& object_info_table, const graphics::VkDeviceAddressMap& dev_addr_map)
 {
     if (wrapper != nullptr)
@@ -1300,6 +1320,26 @@ void MapStructHandles(Decoded_VkGraphicsPipelineShaderGroupsCreateInfoNV* wrappe
         MapStructArrayHandles<Decoded_VkGraphicsShaderGroupCreateInfoNV>(wrapper->pGroups->GetMetaStructPointer(), wrapper->pGroups->GetLength(), object_info_table, dev_addr_map);
 
         value->pPipelines = handle_mapping::MapHandleArray<PipelineInfo>(&wrapper->pPipelines, object_info_table, &VulkanObjectInfoTable::GetPipelineInfo);
+    }
+}
+
+void MapStructHandles(Decoded_VkBindIndexBufferIndirectCommandNV* wrapper, const VulkanObjectInfoTable& object_info_table, const graphics::VkDeviceAddressMap& dev_addr_map)
+{
+    if ((wrapper != nullptr) && (wrapper->decoded_value != nullptr))
+    {
+        VkBindIndexBufferIndirectCommandNV* value = wrapper->decoded_value;
+
+        handle_mapping::MapDeviceAddress(value->bufferAddress, dev_addr_map);
+    }
+}
+
+void MapStructHandles(Decoded_VkBindVertexBufferIndirectCommandNV* wrapper, const VulkanObjectInfoTable& object_info_table, const graphics::VkDeviceAddressMap& dev_addr_map)
+{
+    if ((wrapper != nullptr) && (wrapper->decoded_value != nullptr))
+    {
+        VkBindVertexBufferIndirectCommandNV* value = wrapper->decoded_value;
+
+        handle_mapping::MapDeviceAddress(value->bufferAddress, dev_addr_map);
     }
 }
 
@@ -1422,6 +1462,8 @@ void MapStructHandles(Decoded_VkAccelerationStructureCreateInfoKHR* wrapper, con
         VkAccelerationStructureCreateInfoKHR* value = wrapper->decoded_value;
 
         value->buffer = handle_mapping::MapHandle<BufferInfo>(wrapper->buffer, object_info_table, &VulkanObjectInfoTable::GetBufferInfo);
+
+        handle_mapping::MapDeviceAddress(value->deviceAddress, dev_addr_map);
     }
 }
 
@@ -1490,6 +1532,16 @@ void MapStructHandles(Decoded_VkRayTracingPipelineCreateInfoKHR* wrapper, const 
         value->layout = handle_mapping::MapHandle<PipelineLayoutInfo>(wrapper->layout, object_info_table, &VulkanObjectInfoTable::GetPipelineLayoutInfo);
 
         value->basePipelineHandle = handle_mapping::MapHandle<PipelineInfo>(wrapper->basePipelineHandle, object_info_table, &VulkanObjectInfoTable::GetPipelineInfo);
+    }
+}
+
+void MapStructHandles(Decoded_VkStridedDeviceAddressRegionKHR* wrapper, const VulkanObjectInfoTable& object_info_table, const graphics::VkDeviceAddressMap& dev_addr_map)
+{
+    if ((wrapper != nullptr) && (wrapper->decoded_value != nullptr))
+    {
+        VkStridedDeviceAddressRegionKHR* value = wrapper->decoded_value;
+
+        handle_mapping::MapDeviceAddress(value->deviceAddress, dev_addr_map);
     }
 }
 

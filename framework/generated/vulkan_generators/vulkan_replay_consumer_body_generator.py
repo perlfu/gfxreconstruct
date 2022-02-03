@@ -208,7 +208,7 @@ class VulkanReplayConsumerBodyGenerator(
                 call_expr = '{}(returnValue, {})'.format(
                     self.REPLAY_OVERRIDES[name], arglist
                 )
-            elif return_type == 'VkResult':
+            elif return_type != 'void':
                 # Override functions receive the decoded return value in addition to parameters.
                 call_expr = '{}({}, returnValue, {})'.format(
                     self.REPLAY_OVERRIDES[name], dispatchfunc, arglist
@@ -367,7 +367,10 @@ class VulkanReplayConsumerBodyGenerator(
                 else:
                     # Generate temporary variable to reference a pointer value that is encapsulated within a PointerDecoder object.
                     if is_input:
-                        arg_name = 'in_' + value.name
+                        if value.base_type == 'VkDeviceAddress' and length_name:
+                            arg_name = value.name + '->GetPointer()'
+                        else: 
+                            arg_name = 'in_' + value.name
                     else:
                         arg_name = 'out_' + value.name
 
@@ -404,6 +407,8 @@ class VulkanReplayConsumerBodyGenerator(
                         expr += 'MapHandles<{type}Info>({}, {}, &VulkanObjectInfoTable::Get{type}Info);'.format(
                             value.name, length_name, type=value.base_type[2:]
                         )
+                    elif value.base_type == 'VkDeviceAddress' and length_name:
+                            expr = 'MapDeviceAddresses({}->GetPointer(), {});'.format(value.name, length_name)
                     else:
                         if need_temp_value:
                             expr += '{}->GetPointer();'.format(value.name)
@@ -761,6 +766,9 @@ class VulkanReplayConsumerBodyGenerator(
                     "WARNING: Generating replay code for a function {} with a {} parameter that is undefined."
                     .format(name, value.base_type)
                 )
+            elif value.base_type == 'VkDeviceAddress':
+                preexpr.append('MapDeviceAddress({});'.format(value.name))
+                args.append(value.name)
             else:
                 # Only need to append the parameter name to the args list; no other expressions are necessary.
                 args.append(value.name)

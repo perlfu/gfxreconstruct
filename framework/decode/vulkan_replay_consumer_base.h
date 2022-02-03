@@ -766,6 +766,7 @@ class VulkanReplayConsumerBase : public VulkanConsumer
 
     VkBool32
     OverrideGetPhysicalDeviceWin32PresentationSupportKHR(PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR func,
+                                                         VkBool32                  original_result,
                                                          const PhysicalDeviceInfo* physical_device_info,
                                                          uint32_t                  queueFamilyIndex);
 
@@ -777,6 +778,7 @@ class VulkanReplayConsumerBase : public VulkanConsumer
                                          HandlePointerDecoder<VkSurfaceKHR>*                            pSurface);
 
     VkBool32 OverrideGetPhysicalDeviceXcbPresentationSupportKHR(PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR func,
+                                                                VkBool32                  original_result,
                                                                 const PhysicalDeviceInfo* physical_device_info,
                                                                 uint32_t                  queueFamilyIndex,
                                                                 xcb_connection_t*         connection,
@@ -790,6 +792,7 @@ class VulkanReplayConsumerBase : public VulkanConsumer
                                           HandlePointerDecoder<VkSurfaceKHR>*                             pSurface);
 
     VkBool32 OverrideGetPhysicalDeviceXlibPresentationSupportKHR(PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR func,
+                                                                 VkBool32                  original_result,
                                                                  const PhysicalDeviceInfo* physical_device_info,
                                                                  uint32_t                  queueFamilyIndex,
                                                                  Display*                  dpy,
@@ -805,6 +808,7 @@ class VulkanReplayConsumerBase : public VulkanConsumer
 
     VkBool32
     OverrideGetPhysicalDeviceWaylandPresentationSupportKHR(PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR func,
+                                                           VkBool32                  original_result,
                                                            const PhysicalDeviceInfo* physical_device_info,
                                                            uint32_t                  queueFamilyIndex,
                                                            struct wl_display*        display);
@@ -835,11 +839,25 @@ class VulkanReplayConsumerBase : public VulkanConsumer
 
     VkDeviceAddress
     OverrideGetBufferDeviceAddress(PFN_vkGetBufferDeviceAddress                                   func,
+                                   VkDeviceAddress                                                original_result,
                                    const DeviceInfo*                                              device_info,
                                    const StructPointerDecoder<Decoded_VkBufferDeviceAddressInfo>* pInfo);
 
-    void OverrideGetAccelerationStructureDeviceAddressKHR(
+    uint64_t
+    OverrideGetBufferOpaqueCaptureAddress(PFN_vkGetBufferOpaqueCaptureAddress func,
+                                          uint64_t                            original_result,
+                                          const DeviceInfo*                   device_info,
+                                          const StructPointerDecoder<Decoded_VkBufferDeviceAddressInfo>* pInfo);
+
+    uint64_t OverrideGetDeviceMemoryOpaqueCaptureAddress(
+        PFN_vkGetDeviceMemoryOpaqueCaptureAddress                                   func,
+        uint64_t                                                                    original_result,
+        const DeviceInfo*                                                           device_info,
+        const StructPointerDecoder<Decoded_VkDeviceMemoryOpaqueCaptureAddressInfo>* pInfo);
+
+    VkDeviceAddress OverrideGetAccelerationStructureDeviceAddressKHR(
         PFN_vkGetAccelerationStructureDeviceAddressKHR                                   func,
+        VkDeviceAddress                                                                  original_result,
         const DeviceInfo*                                                                device_info,
         const StructPointerDecoder<Decoded_VkAccelerationStructureDeviceAddressInfoKHR>* pInfo);
 

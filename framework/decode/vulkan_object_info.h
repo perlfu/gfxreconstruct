@@ -196,7 +196,6 @@ typedef VulkanObjectInfo<VkDisplayModeKHR>                DisplayModeKHRInfo;
 typedef VulkanObjectInfo<VkDebugReportCallbackEXT>        DebugReportCallbackEXTInfo;
 typedef VulkanObjectInfo<VkIndirectCommandsLayoutNV>      IndirectCommandsLayoutNVInfo;
 typedef VulkanObjectInfo<VkDebugUtilsMessengerEXT>        DebugUtilsMessengerEXTInfo;
-typedef VulkanObjectInfo<VkAccelerationStructureKHR>      AccelerationStructureKHRInfo;
 typedef VulkanObjectInfo<VkAccelerationStructureNV>       AccelerationStructureNVInfo;
 typedef VulkanObjectInfo<VkPerformanceConfigurationINTEL> PerformanceConfigurationINTELInfo;
 typedef VulkanObjectInfo<VkDeferredOperationKHR>          DeferredOperationKHRInfo;
@@ -288,6 +287,7 @@ struct DeviceMemoryInfo : public VulkanObjectInfo<VkDeviceMemory>
 {
     VulkanResourceAllocator*            allocator{ nullptr };
     VulkanResourceAllocator::MemoryData allocator_data{ 0 };
+    VkDeviceSize                        size{ 0 };
 };
 
 struct BufferInfo : public VulkanObjectInfo<VkBuffer>
@@ -296,9 +296,10 @@ struct BufferInfo : public VulkanObjectInfo<VkBuffer>
     VulkanResourceAllocator::ResourceData allocator_data{ 0 };
 
     // The following values are only used when loading the initial state for trimmed files.
-    VkMemoryPropertyFlags               memory_property_flags{ 0 };
-    VkBufferUsageFlags                  usage{ 0 };
-    uint32_t                            queue_family_index{ 0 };
+    VkMemoryPropertyFlags memory_property_flags{ 0 };
+    VkBufferUsageFlags    usage{ 0 };
+    VkDeviceSize          size{ 0 };
+    uint32_t              queue_family_index{ 0 };
 };
 
 struct ImageInfo : public VulkanObjectInfo<VkImage>
@@ -390,6 +391,11 @@ struct SwapchainKHRInfo : public VulkanObjectInfo<VkSwapchainKHR>
 struct ValidationCacheEXTInfo : public VulkanObjectInfo<VkValidationCacheEXT>
 {
     std::unordered_map<uint32_t, size_t> array_counts;
+};
+
+struct AccelerationStructureKHRInfo : public VulkanObjectInfo<VkAccelerationStructureKHR>
+{
+    VkDeviceSize size{ 0 };
 };
 
 //

@@ -26,6 +26,7 @@
 #include "format/format.h"
 #include "util/defines.h"
 #include "util/memory_output_stream.h"
+#include "encode/handle_unwrap_memory.h"
 
 #include "vulkan/vulkan.h"
 
@@ -82,6 +83,41 @@ struct CreateDependencyInfo
     format::HandleId  handle_id{ format::kNullHandleId };
     format::ApiCallId create_call_id{ format::ApiCallId::ApiCall_Unknown };
     CreateParameters  create_parameters;
+};
+
+struct AccelerationStructureBuildInfo
+{
+    HandleUnwrapMemory                                    info_pnext_memory;
+    std::vector<VkAccelerationStructureGeometryKHR>       geometries;
+    std::vector<HandleUnwrapMemory>                       geometry_pnext_memories;
+    std::vector<VkAccelerationStructureBuildRangeInfoKHR> build_range_infos;
+};
+
+struct BuildAccelerationStructuresInfo
+{
+    format::HandleId                                         deferred_operation_id{ format::kNullHandleId };
+    std::vector<VkAccelerationStructureBuildGeometryInfoKHR> infos;
+    std::vector<VkAccelerationStructureBuildRangeInfoKHR*>   build_range_infos;
+
+    std::vector<AccelerationStructureBuildInfo> build_infos;
+};
+
+struct AccelerationStructureIndirectBuildInfo
+{
+    HandleUnwrapMemory                              info_pnext_memory;
+    std::vector<VkAccelerationStructureGeometryKHR> geometries;
+    std::vector<HandleUnwrapMemory>                 geometry_pnext_memories;
+    std::vector<uint32_t>                           max_primitive_counts;
+};
+
+struct BuildAccelerationStructuresIndirectInfo
+{
+    std::vector<VkAccelerationStructureBuildGeometryInfoKHR> infos;
+    std::vector<VkDeviceAddress>                             indirect_device_addresses;
+    std::vector<uint32_t>                                    indirect_strides;
+    std::vector<uint32_t*>                                   max_primitive_counts;
+
+    std::vector<AccelerationStructureIndirectBuildInfo> build_infos;
 };
 
 // Create info for all descriptor set layouts required by a pipeline layout.

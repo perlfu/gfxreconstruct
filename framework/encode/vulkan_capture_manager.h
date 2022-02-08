@@ -830,6 +830,28 @@ class VulkanCaptureManager : public CaptureManager
         }
     }
 
+    void PostProcess_vkBuildAccelerationStructuresKHR(
+        VkResult                                               result,
+        VkDevice                                               device,
+        VkDeferredOperationKHR                                 deferredOperation,
+        uint32_t                                               infoCount,
+        const VkAccelerationStructureBuildGeometryInfoKHR*     pInfos,
+        const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos);
+
+    void PostProcess_vkCmdBuildAccelerationStructuresKHR(
+        VkCommandBuffer                                        commandBuffer,
+        uint32_t                                               infoCount,
+        const VkAccelerationStructureBuildGeometryInfoKHR*     pInfos,
+        const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos);
+
+    void
+    PostProcess_vkCmdBuildAccelerationStructuresIndirectKHR(VkCommandBuffer commandBuffer,
+                                                            uint32_t        infoCount,
+                                                            const VkAccelerationStructureBuildGeometryInfoKHR* pInfos,
+                                                            const VkDeviceAddress* pIndirectDeviceAddresses,
+                                                            const uint32_t*        pIndirectStrides,
+                                                            const uint32_t* const* ppMaxPrimitiveCounts);
+
     void PostProcess_vkMapMemory(VkResult         result,
                                  VkDevice         device,
                                  VkDeviceMemory   memory,

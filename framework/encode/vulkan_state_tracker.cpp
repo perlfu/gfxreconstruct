@@ -1147,6 +1147,134 @@ void VulkanStateTracker::TrackReleaseFullScreenExclusiveMode(VkDevice device, Vk
     wrapper->release_full_screen_exclusive_mode = true;
 }
 
+void CopyBuildAccelerationStructureIndirectInfos(
+    VkDeferredOperationKHR                                 deferred_operation,
+    uint32_t                                               info_count,
+    const VkAccelerationStructureBuildGeometryInfoKHR*     infos,
+    const VkAccelerationStructureBuildRangeInfoKHR* const* build_range_infos)
+{
+    for (uint32_t i = 0; i < info_count; ++i)
+    {
+        auto wrapper = reinterpret_cast<AccelerationStructureKHRWrapper*>(infos[i].dstAccelerationStructure);
+        assert(wrapper != nullptr);
+
+        auto&                          info = wrapper->build_acceleration_structures_info;
+        AccelerationStructureBuildInfo build_info{};
+
+        info.deferred_operation_id = GetWrappedId<VkDeferredOperationKHR>(deferred_operation);
+        info.infos.emplace_back(infos[i]);
+        auto index              = info.infos.size() - 1;
+        info.infos[index].pNext = TrackPNextStruct(infos[i].pNext, &build_info.info_pnext_memory);
+
+        build_info.geometries.resize(infos[i].geometryCount);
+        build_info.geometry_pnext_memories.resize(infos[i].geometryCount);
+
+        for (uint32_t j = 0; j < infos[i].geometryCount; ++j)
+        {
+            assert((infos[i].pGeometries != nullptr) || (infos[i].ppGeometries != nullptr));
+
+            if (infos[i].pGeometries != nullptr)
+            {
+                build_info.geometries[j] = infos[i].pGeometries[j];
+                build_info.geometries[j].pNext =
+                    TrackPNextStruct(infos[i].pGeometries[j].pNext, &build_info.geometry_pnext_memories[j]);
+            }
+            else if (infos[i].ppGeometries != nullptr)
+            {
+                build_info.geometries[j] = *infos[i].ppGeometries[j];
+                build_info.geometries[j].pNext =
+                    TrackPNextStruct(infos[i].ppGeometries[j]->pNext, &build_info.geometry_pnext_memories[j]);
+            }
+            build_info.build_range_infos.emplace_back(build_range_infos[i][j]);
+        }
+        info.infos[index].ppGeometries = nullptr;
+        info.infos[index].pGeometries  = build_info.geometries.data();
+        info.build_range_infos.emplace_back(build_info.build_range_infos.data());
+
+        info.build_infos.emplace_back(std::move(build_info));
+    }
+}
+
+void VulkanStateTracker::TrackBuildAccelerationStructures(
+    VkDevice                                               device,
+    VkDeferredOperationKHR                                 deferred_operation,
+    uint32_t                                               info_count,
+    const VkAccelerationStructureBuildGeometryInfoKHR*     infos,
+    const VkAccelerationStructureBuildRangeInfoKHR* const* build_range_infos)
+{
+    assert((device != VK_NULL_HANDLE) && (deferred_operation != VK_NULL_HANDLE) && (info_count > 0) &&
+           (infos != nullptr) && (build_range_infos != nullptr));
+
+    CopyBuildAccelerationStructureIndirectInfos(deferred_operation, info_count, infos, build_range_infos);
+}
+
+void VulkanStateTracker::TrackCmdBuildAccelerationStructures(
+    VkCommandBuffer                                        command_buffer,
+    uint32_t                                               info_count,
+    const VkAccelerationStructureBuildGeometryInfoKHR*     infos,
+    const VkAccelerationStructureBuildRangeInfoKHR* const* build_range_infos)
+{
+    assert((command_buffer != VK_NULL_HANDLE) && (info_count > 0) && (infos != nullptr) &&
+           (build_range_infos != nullptr));
+
+    CopyBuildAccelerationStructureIndirectInfos(VK_NULL_HANDLE, info_count, infos, build_range_infos);
+}
+
+void VulkanStateTracker::TrackCmdBuildAccelerationStructuresIndirect(
+    VkCommandBuffer                                    command_buffer,
+    uint32_t                                           info_count,
+    const VkAccelerationStructureBuildGeometryInfoKHR* infos,
+    const VkDeviceAddress*                             indirect_device_addresses,
+    const uint32_t*                                    indirect_strides,
+    const uint32_t* const*                             max_primitive_counts)
+{
+    assert((command_buffer != VK_NULL_HANDLE) && (info_count > 0) && (infos != nullptr) &&
+           (indirect_device_addresses != nullptr) && (indirect_strides != nullptr) &&
+           (max_primitive_counts != nullptr));
+
+    for (uint32_t i = 0; i < info_count; ++i)
+    {
+        auto wrapper = reinterpret_cast<AccelerationStructureKHRWrapper*>(infos[i].dstAccelerationStructure);
+        assert(wrapper != nullptr);
+
+        auto&                                  info = wrapper->build_acceleration_structures_indirect_info;
+        AccelerationStructureIndirectBuildInfo build_info{};
+
+        info.infos.emplace_back(infos[i]);
+        info.indirect_device_addresses.emplace_back(indirect_device_addresses[i]);
+        info.indirect_strides.emplace_back(indirect_strides[i]);
+        auto index              = info.infos.size() - 1;
+        info.infos[index].pNext = TrackPNextStruct(infos[i].pNext, &build_info.info_pnext_memory);
+
+        build_info.geometries.resize(infos[i].geometryCount);
+        build_info.geometry_pnext_memories.resize(infos[i].geometryCount);
+
+        for (uint32_t j = 0; j < infos[i].geometryCount; ++j)
+        {
+            assert((infos[i].pGeometries != nullptr) || (infos[i].ppGeometries != nullptr));
+
+            if (infos[i].pGeometries != nullptr)
+            {
+                build_info.geometries[j] = infos[i].pGeometries[j];
+                build_info.geometries[j].pNext =
+                    TrackPNextStruct(infos[i].pGeometries[j].pNext, &build_info.geometry_pnext_memories[j]);
+            }
+            else if (infos[i].ppGeometries != nullptr)
+            {
+                build_info.geometries[j] = *infos[i].ppGeometries[j];
+                build_info.geometries[j].pNext =
+                    TrackPNextStruct(infos[i].ppGeometries[j]->pNext, &build_info.geometry_pnext_memories[j]);
+            }
+            build_info.max_primitive_counts.emplace_back(max_primitive_counts[i][j]);
+        }
+        info.infos[index].ppGeometries = nullptr;
+        info.infos[index].pGeometries  = build_info.geometries.data();
+        info.max_primitive_counts.emplace_back(build_info.max_primitive_counts.data());
+
+        info.build_infos.emplace_back(std::move(build_info));
+    }
+}
+
 void VulkanStateTracker::DestroyState(InstanceWrapper* wrapper)
 {
     assert(wrapper != nullptr);

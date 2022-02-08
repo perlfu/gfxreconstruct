@@ -377,6 +377,24 @@ class VulkanStateTracker
 
     void TrackReleaseFullScreenExclusiveMode(VkDevice device, VkSwapchainKHR swapchain);
 
+    void TrackBuildAccelerationStructures(VkDevice                                               device,
+                                          VkDeferredOperationKHR                                 deferred_operation,
+                                          uint32_t                                               info_count,
+                                          const VkAccelerationStructureBuildGeometryInfoKHR*     infos,
+                                          const VkAccelerationStructureBuildRangeInfoKHR* const* build_range_infos);
+
+    void TrackCmdBuildAccelerationStructures(VkCommandBuffer                                        command_buffer,
+                                             uint32_t                                               info_count,
+                                             const VkAccelerationStructureBuildGeometryInfoKHR*     infos,
+                                             const VkAccelerationStructureBuildRangeInfoKHR* const* build_range_infos);
+
+    void TrackCmdBuildAccelerationStructuresIndirect(VkCommandBuffer                                    command_buffer,
+                                                     uint32_t                                           info_count,
+                                                     const VkAccelerationStructureBuildGeometryInfoKHR* infos,
+                                                     const VkDeviceAddress* indirect_device_addresses,
+                                                     const uint32_t*        indirect_strides,
+                                                     const uint32_t* const* max_primitive_counts);
+
   private:
     template <typename ParentHandle, typename SecondaryHandle, typename Wrapper, typename CreateInfo>
     void AddGroupHandles(ParentHandle                  parent_handle,

@@ -1493,6 +1493,51 @@ void VulkanCaptureManager::PreProcess_vkCreateSwapchain(VkDevice                
     }
 }
 
+void VulkanCaptureManager::PostProcess_vkBuildAccelerationStructuresKHR(
+    VkResult                                               result,
+    VkDevice                                               device,
+    VkDeferredOperationKHR                                 deferredOperation,
+    uint32_t                                               infoCount,
+    const VkAccelerationStructureBuildGeometryInfoKHR*     pInfos,
+    const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos)
+{
+    if ((result == VK_SUCCESS) && (GetCaptureMode() & kModeTrack) == kModeTrack)
+    {
+        assert(state_tracker_ != nullptr);
+        state_tracker_->TrackBuildAccelerationStructures(
+            device, deferredOperation, infoCount, pInfos, ppBuildRangeInfos);
+    }
+}
+
+void VulkanCaptureManager::PostProcess_vkCmdBuildAccelerationStructuresKHR(
+    VkCommandBuffer                                        commandBuffer,
+    uint32_t                                               infoCount,
+    const VkAccelerationStructureBuildGeometryInfoKHR*     pInfos,
+    const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos)
+{
+    if ((GetCaptureMode() & kModeTrack) == kModeTrack)
+    {
+        assert(state_tracker_ != nullptr);
+        state_tracker_->TrackCmdBuildAccelerationStructures(commandBuffer, infoCount, pInfos, ppBuildRangeInfos);
+    }
+}
+
+void VulkanCaptureManager::PostProcess_vkCmdBuildAccelerationStructuresIndirectKHR(
+    VkCommandBuffer                                    commandBuffer,
+    uint32_t                                           infoCount,
+    const VkAccelerationStructureBuildGeometryInfoKHR* pInfos,
+    const VkDeviceAddress*                             pIndirectDeviceAddresses,
+    const uint32_t*                                    pIndirectStrides,
+    const uint32_t* const*                             ppMaxPrimitiveCounts)
+{
+    if ((GetCaptureMode() & kModeTrack) == kModeTrack)
+    {
+        assert(state_tracker_ != nullptr);
+        state_tracker_->TrackCmdBuildAccelerationStructuresIndirect(
+            commandBuffer, infoCount, pInfos, pIndirectDeviceAddresses, pIndirectStrides, ppMaxPrimitiveCounts);
+    }
+}
+
 void VulkanCaptureManager::PostProcess_vkMapMemory(VkResult         result,
                                                    VkDevice         device,
                                                    VkDeviceMemory   memory,
@@ -1994,7 +2039,8 @@ void VulkanCaptureManager::PreProcess_vkGetBufferOpaqueCaptureAddress(VkDevice  
     if (!device_wrapper->property_feature_info.feature_bufferDeviceAddressCaptureReplay)
     {
         GFXRECON_LOG_ERROR_ONCE(
-            "The application is using vkGetBufferOpaqueCaptureAddress, which requires the bufferDeviceAddressCaptureReplay "
+            "The application is using vkGetBufferOpaqueCaptureAddress, which requires the "
+            "bufferDeviceAddressCaptureReplay "
             "feature for accurate capture and replay. The capture device does not support this feature, so replay of "
             "the captured file may fail.");
     }
@@ -2007,7 +2053,8 @@ void VulkanCaptureManager::PreProcess_vkGetDeviceMemoryOpaqueCaptureAddress(
     if (!device_wrapper->property_feature_info.feature_bufferDeviceAddressCaptureReplay)
     {
         GFXRECON_LOG_ERROR_ONCE(
-            "The application is using vkGetDeviceMemoryOpaqueCaptureAddress, which requires the bufferDeviceAddressCaptureReplay "
+            "The application is using vkGetDeviceMemoryOpaqueCaptureAddress, which requires the "
+            "bufferDeviceAddressCaptureReplay "
             "feature for accurate capture and replay. The capture device does not support this feature, so replay of "
             "the captured file may fail.");
     }

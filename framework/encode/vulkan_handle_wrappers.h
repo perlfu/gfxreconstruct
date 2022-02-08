@@ -80,6 +80,8 @@ struct IndirectCommandsLayoutNVWrapper      : public HandleWrapper<VkIndirectCom
 struct PerformanceConfigurationINTELWrapper : public HandleWrapper<VkPerformanceConfigurationINTEL> {};
 struct DeferredOperationKHRWrapper          : public HandleWrapper<VkDeferredOperationKHR> {};
 struct PrivateDataSlotEXTWrapper            : public HandleWrapper<VkPrivateDataSlotEXT> {};
+struct PrivateDataSlotWrapper               : public HandleWrapper<VkPrivateDataSlot>{};
+struct AccelerationStructureNVWrapper       : public HandleWrapper<VkAccelerationStructureNV>{};
 
 // This handle type has a create function, but no destroy function. The handle wrapper will be owned by its parent VkDisplayKHR
 // handle wrapper, which will filter duplicate handle retrievals and ensure that the wrapper is destroyed.
@@ -297,9 +299,6 @@ struct PipelineLayoutWrapper : public HandleWrapper<VkPipelineLayout>
     std::shared_ptr<PipelineLayoutDependencies> layout_dependencies;
 };
 
-struct PrivateDataSlotWrapper : public HandleWrapper<VkPrivateDataSlot>
-{};
-
 struct PipelineWrapper : public HandleWrapper<VkPipeline>
 {
     // Creation info for objects used to create the pipeline, which may have been destroyed after pipeline creation.
@@ -430,11 +429,9 @@ struct AccelerationStructureKHRWrapper : public HandleWrapper<VkAccelerationStru
     // State tracking info for buffers with device addresses.
     format::HandleId device_id{ format::kNullHandleId };
     VkDeviceAddress  address{ 0 };
-};
 
-struct AccelerationStructureNVWrapper : public HandleWrapper<VkAccelerationStructureNV>
-{
-    // TODO: Determine what additional state tracking is needed.
+    BuildAccelerationStructuresInfo         build_acceleration_structures_info;
+    BuildAccelerationStructuresIndirectInfo build_acceleration_structures_indirect_info;
 };
 
 // Handle alias types for extension handle types that have been promoted to core types.

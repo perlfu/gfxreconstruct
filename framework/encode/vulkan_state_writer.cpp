@@ -24,6 +24,7 @@
 
 #include "encode/struct_pointer_encoder.h"
 #include "encode/vulkan_state_info.h"
+#include "encode/custom_vulkan_array_size_2d.h"
 #include "format/format_util.h"
 #include "util/logging.h"
 
@@ -152,7 +153,7 @@ void VulkanStateWriter::WriteState(const VulkanStateTable& state_table, uint64_t
     WritePipelineLayoutState(state_table);
     StandardCreateWrite<PipelineCacheWrapper>(state_table);
     WritePipelineState(state_table);
-    StandardCreateWrite<AccelerationStructureKHRWrapper>(state_table);
+    WriteAccelerationStructureKHRState(state_table);
     StandardCreateWrite<AccelerationStructureNVWrapper>(state_table);
 
     // Descriptor creation.
@@ -1000,6 +1001,92 @@ void VulkanStateWriter::WriteAccelerationStructureKHRState(const VulkanStateTabl
         }
 
         WriteFunctionCall(wrapper->create_call_id, wrapper->create_parameters.get());
+
+        if (!wrapper->build_acceleration_structures_info.infos.empty())
+        {
+            if (wrapper->build_acceleration_structures_info.deferred_operation_id == format::kNullHandleId)
+            {
+                // vkCmdBuildAccelerationStructuresKHR
+                WriteCommandProcessingCreateCommands(wrapper->device_id,
+                                                     kDefaultQueueFamilyIndex,
+                                                     kTempQueueId,
+                                                     kTempCommandPoolId,
+                                                     kTempCommandBufferId);
+
+                WriteCommandBegin(kTempCommandBufferId);
+
+                uint32_t info_count = static_cast<uint32_t>(wrapper->build_acceleration_structures_info.infos.size());
+                auto     infos      = wrapper->build_acceleration_structures_info.infos.data();
+                auto     build_range_infos = wrapper->build_acceleration_structures_info.build_range_infos.data();
+
+                encoder_.EncodeHandleIdValue(kTempCommandBufferId);
+                encoder_.EncodeUInt32Value(info_count);
+                EncodeStructArray(&encoder_, infos, info_count);
+                EncodeStructArray2D(&encoder_,
+                                    build_range_infos,
+                                    ArraySize2D<VkCommandBuffer,
+                                                uint32_t,
+                                                const VkAccelerationStructureBuildGeometryInfoKHR*,
+                                                const VkAccelerationStructureBuildRangeInfoKHR* const*>(
+                                        VK_NULL_HANDLE, info_count, infos, build_range_infos));
+
+                WriteFunctionCall(format::ApiCallId::ApiCall_vkCmdBuildAccelerationStructuresKHR, &parameter_stream_);
+                parameter_stream_.Reset();
+
+                WriteCommandEnd(kTempCommandBufferId);
+                WriteCommandExecution(kTempQueueId, kTempCommandBufferId);
+
+                WriteDestroyDeviceObject(
+                    format::ApiCallId::ApiCall_vkDestroyCommandPool, wrapper->device_id, kTempCommandPoolId, nullptr);
+            }
+            else
+            {
+                // vkBuildAccelerationStructuresKHR TODO
+            }
+        }
+        if (!wrapper->build_acceleration_structures_indirect_info.infos.empty())
+        {
+            // vkCmdBuildAccelerationStructuresIndirectKHR
+            WriteCommandProcessingCreateCommands(
+                wrapper->device_id, kDefaultQueueFamilyIndex, kTempQueueId, kTempCommandPoolId, kTempCommandBufferId);
+
+            WriteCommandBegin(kTempCommandBufferId);
+
+            uint32_t info_count = static_cast<uint32_t>(wrapper->build_acceleration_structures_info.infos.size());
+            auto     infos      = wrapper->build_acceleration_structures_indirect_info.infos.data();
+            auto     indirect_device_addresses =
+                wrapper->build_acceleration_structures_indirect_info.indirect_device_addresses.data();
+            auto indirect_strides = wrapper->build_acceleration_structures_indirect_info.indirect_strides.data();
+            auto max_primitive_counts =
+                wrapper->build_acceleration_structures_indirect_info.max_primitive_counts.data();
+
+            encoder_.EncodeHandleIdValue(kTempCommandBufferId);
+            encoder_.EncodeUInt32Value(info_count);
+            encoder_.EncodeVkDeviceAddressArray(indirect_device_addresses, info_count);
+            encoder_.EncodeUInt32Array(indirect_strides, info_count);
+            encoder_.EncodeUInt32Array2D(max_primitive_counts,
+                                         ArraySize2D<VkCommandBuffer,
+                                                     uint32_t,
+                                                     const VkAccelerationStructureBuildGeometryInfoKHR*,
+                                                     const VkDeviceAddress*,
+                                                     const uint32_t*,
+                                                     const uint32_t* const*>(VK_NULL_HANDLE,
+                                                                             info_count,
+                                                                             infos,
+                                                                             indirect_device_addresses,
+                                                                             indirect_strides,
+                                                                             max_primitive_counts));
+
+            WriteFunctionCall(format::ApiCallId::ApiCall_vkCmdBuildAccelerationStructuresIndirectKHR,
+                              &parameter_stream_);
+            parameter_stream_.Reset();
+
+            WriteCommandEnd(kTempCommandBufferId);
+            WriteCommandExecution(kTempQueueId, kTempCommandBufferId);
+
+            WriteDestroyDeviceObject(
+                format::ApiCallId::ApiCall_vkDestroyCommandPool, wrapper->device_id, kTempCommandPoolId, nullptr);
+        }
     });
 }
 

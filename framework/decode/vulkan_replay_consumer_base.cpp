@@ -5742,13 +5742,27 @@ VkResult VulkanReplayConsumerBase::OverrideCreateRayTracingPipelinesKHR(
                                                             out_pPipelines);
     }
 
-    if ((in_deferredOperation != VK_NULL_HANDLE) &&
-        ((result == VK_OPERATION_DEFERRED_KHR) || (result == VK_OPERATION_NOT_DEFERRED_KHR)))
+    if (((result == VK_SUCCESS) || (result == VK_OPERATION_DEFERRED_KHR) || (result == VK_OPERATION_NOT_DEFERRED_KHR)))
     {
-        // Before running vkDeferredOperationJoinKHR, CreateRayTracingPipelinesKHR won't be processed. It means if any
-        // parameters are be modified before running vkDeferredOperationJoinKHR, it will fail. So processing deferred
-        // operation immediately after CreateRayTracingPipelinesKHR will be safer.
-        ProcessDeferredOperation(device, in_deferredOperation);
+        if ((in_deferredOperation != VK_NULL_HANDLE) && (result == VK_OPERATION_DEFERRED_KHR) ||
+            (result == VK_OPERATION_NOT_DEFERRED_KHR))
+        {
+            // Before running vkDeferredOperationJoinKHR, CreateRayTracingPipelinesKHR won't be processed. It means if
+            // any parameters are be modified before running vkDeferredOperationJoinKHR, it will fail. So processing
+            // deferred operation immediately after CreateRayTracingPipelinesKHR will be safer.
+            ProcessDeferredOperation(device, in_deferredOperation);
+        }
+
+        if (!device_info->property_feature_info.feature_rayTracingPipelineShaderGroupHandleCaptureReplay &&
+            !(in_pCreateInfos->flags & VK_PIPELINE_CREATE_LIBRARY_BIT_KHR))
+        {
+            for (uint32_t i = 0; i < createInfoCount; ++i)
+            {
+                auto pipe_info = reinterpret_cast<PipelineInfo*>(pPipelines->GetConsumerData(i));
+                assert(pipe_info != nullptr);
+                ProcessRayTracingShaderBindingTable(device, *pipe_info, *in_pCreateInfos);
+            }
+        }
     }
     return result;
 }
@@ -5802,6 +5816,46 @@ void VulkanReplayConsumerBase::ProcessDeferredOperation(VkDevice               d
         result = vkGetDeferredOperationResultKHR(device, deferred_operation);
         assert(result == VK_SUCCESS || result == VK_NOT_READY);
     }
+}
+
+void VulkanReplayConsumerBase::ProcessRayTracingShaderBindingTable(VkDevice                                 device,
+                                                                   PipelineInfo&                            pipe_info,
+                                                                   const VkRayTracingPipelineCreateInfoKHR& pipe_ci)
+{
+    VkPhysicalDeviceRayTracingPipelinePropertiesKHR ray_tracing_props{
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR
+    };
+    VkPhysicalDeviceProperties2 props{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
+    props.pNext = &ray_tracing_props;
+
+    std::vector<VkRayTracingPipelineCreateInfoKHR> library_infos;
+    if (pipe_ci.pLibraryInfo != nullptr)
+    {
+        for (uint32_t i = 0; i < pipe_ci.pLibraryInfo->libraryCount; ++i)
+        {
+            library_infos.emplace_back(pipe_ci.pLibraryInfo->pLibraries[i]);
+        }
+    }
+    uint32_t              total_group_count = 0;
+    std::vector<uint32_t> group_count_per_input;
+    group_count_per_input.reserve(1 + library_infos.size());
+
+    group_count_per_input.push_back(pipe_ci.groupCount);
+    total_group_count += pipe_ci.groupCount;
+    for (const auto& lib : library_infos)
+    {
+        group_count_per_input.push_back(lib.groupCount);
+        total_group_count += lib.groupCount;
+    }
+
+    uint32_t             sbt_size = total_group_count * m_handleSize;
+    std::vector<uint8_t> shader_handle_storage(sbt_size);
+
+    PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR =
+        GetDeviceTable(device)->GetRayTracingShaderGroupHandlesKHR;
+
+    auto result = vkGetRayTracingShaderGroupHandlesKHR(
+        device, pipe_info.handle, 0, total_group_count, sbt_size, shader_handle_storage.data());
 }
 
 VkDeviceAddress VulkanReplayConsumerBase::OverrideGetBufferDeviceAddress(

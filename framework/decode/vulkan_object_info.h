@@ -38,6 +38,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <array>
 
 GFXRECON_BEGIN_NAMESPACE(gfxrecon)
 GFXRECON_BEGIN_NAMESPACE(decode)
@@ -332,9 +333,28 @@ struct PipelineCacheInfo : public VulkanObjectInfo<VkPipelineCache>
     std::unordered_map<uint32_t, size_t> array_counts;
 };
 
+struct RayTracingShaderBindingTableInfo
+{
+    VkStridedDeviceAddressRegionKHR shader_binding_table{};
+    VkBuffer                        buffer{ VK_NULL_HANDLE };
+    VkDeviceMemory                  memory{ VK_NULL_HANDLE };
+};
+
+enum RayTracingShaderBindingTableIndex
+{
+    ShaderBindingTable_raygen,
+    ShaderBindingTable_miss,
+    ShaderBindingTable_hit,
+    ShaderBindingTable_callable
+};
+
 struct PipelineInfo : public VulkanObjectInfo<VkPipeline>
 {
     std::unordered_map<uint32_t, size_t> array_counts;
+
+    // When the device doesn't support rayTracingPipelineShaderGroupHandleCaptureReplay, it needs to use replaced those
+    // for vkCmdTraceRaysKHR and vkCmdTraceRaysIndirectKHR.
+    std::array<RayTracingShaderBindingTableInfo, 4> replace_shader_binding_tables;
 };
 
 struct DescriptorPoolInfo : public VulkanPoolInfo<VkDescriptorPool>

@@ -977,6 +977,10 @@ class VulkanReplayConsumerBase : public VulkanConsumer
     void
     ProcessDeferredOperation(VkDevice device, VkDeferredOperationKHR deferred_operation, bool single_thread = true);
 
+    void ProcessRayTracingShaderBindingTable(VkDevice                                 device,
+                                             PipelineInfo&                            pipe_info,
+                                             const VkRayTracingPipelineCreateInfoKHR& pipe_ci);
+
     void SetSwapchainWindowSize(const Decoded_VkSwapchainCreateInfoKHR* swapchain_info);
 
     void InitializeScreenshotHandler();

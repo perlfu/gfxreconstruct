@@ -7366,6 +7366,40 @@ void VulkanReplayConsumer::Process_vkCmdBuildAccelerationStructuresIndirectKHR(
     GetDeviceTable(in_commandBuffer)->CmdBuildAccelerationStructuresIndirectKHR(in_commandBuffer, infoCount, in_pInfos, in_pIndirectDeviceAddresses, in_pIndirectStrides, in_ppMaxPrimitiveCounts);
 }
 
+void VulkanReplayConsumer::Process_vkBuildAccelerationStructuresKHR(
+    const ApiCallInfo&                          call_info,
+    VkResult                                    returnValue,
+    format::HandleId                            device,
+    format::HandleId                            deferredOperation,
+    uint32_t                                    infoCount,
+    StructPointerDecoder<Decoded_VkAccelerationStructureBuildGeometryInfoKHR>* pInfos,
+    StructPointerDecoder<Decoded_VkAccelerationStructureBuildRangeInfoKHR*>* ppBuildRangeInfos)
+{
+    auto in_device = GetObjectInfoTable().GetDeviceInfo(device);
+    auto in_deferredOperation = GetObjectInfoTable().GetDeferredOperationKHRInfo(deferredOperation);
+
+    MapStructArrayHandles(pInfos->GetMetaStructPointer(), pInfos->GetLength(), GetObjectInfoTable());
+
+    VkResult replay_result = OverrideBuildAccelerationStructuresKHR(GetDeviceTable(in_device->handle)->BuildAccelerationStructuresKHR, returnValue, in_device, in_deferredOperation, infoCount, pInfos, ppBuildRangeInfos);
+    CheckResult("vkBuildAccelerationStructuresKHR", returnValue, replay_result);
+}
+
+void VulkanReplayConsumer::Process_vkCopyAccelerationStructureKHR(
+    const ApiCallInfo&                          call_info,
+    VkResult                                    returnValue,
+    format::HandleId                            device,
+    format::HandleId                            deferredOperation,
+    StructPointerDecoder<Decoded_VkCopyAccelerationStructureInfoKHR>* pInfo)
+{
+    auto in_device = GetObjectInfoTable().GetDeviceInfo(device);
+    auto in_deferredOperation = GetObjectInfoTable().GetDeferredOperationKHRInfo(deferredOperation);
+
+    MapStructHandles(pInfo->GetMetaStructPointer(), GetObjectInfoTable());
+
+    VkResult replay_result = OverrideCopyAccelerationStructureKHR(GetDeviceTable(in_device->handle)->CopyAccelerationStructureKHR, returnValue, in_device, in_deferredOperation, pInfo);
+    CheckResult("vkCopyAccelerationStructureKHR", returnValue, replay_result);
+}
+
 void VulkanReplayConsumer::Process_vkCopyAccelerationStructureToMemoryKHR(
     const ApiCallInfo&                          call_info,
     VkResult                                    returnValue,

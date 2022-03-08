@@ -5922,6 +5922,52 @@ VulkanReplayConsumerBase::OverrideGetDeferredOperationResultKHR(PFN_vkGetDeferre
     return original_result;
 }
 
+VkResult VulkanReplayConsumerBase::OverrideBuildAccelerationStructuresKHR(
+    PFN_vkBuildAccelerationStructuresKHR                                       func,
+    VkResult                                                                   original_result,
+    const DeviceInfo*                                                          device_info,
+    const DeferredOperationKHRInfo*                                            deferred_operation_info,
+    uint32_t                                                                   infoCount,
+    StructPointerDecoder<Decoded_VkAccelerationStructureBuildGeometryInfoKHR>* pInfos,
+    StructPointerDecoder<Decoded_VkAccelerationStructureBuildRangeInfoKHR*>*   ppBuildRangeInfos)
+{
+    auto  device                        = device_info->handle;
+    auto  deferred_operation            = deferred_operation_info->handle;
+    auto* accel_struct_build_geom_info  = pInfos->GetPointer();
+    auto* accel_struct_build_range_info = ppBuildRangeInfos->GetPointer();
+
+    auto replay_result =
+        func(device, deferred_operation, infoCount, accel_struct_build_geom_info, accel_struct_build_range_info);
+
+    if ((deferred_operation != VK_NULL_HANDLE) &&
+        ((replay_result == VK_OPERATION_DEFERRED_KHR) || (replay_result == VK_OPERATION_NOT_DEFERRED_KHR)))
+    {
+        ProcessDeferredOperation(device, deferred_operation);
+    }
+    return replay_result;
+}
+
+VkResult VulkanReplayConsumerBase::OverrideCopyAccelerationStructureKHR(
+    PFN_vkCopyAccelerationStructureKHR                                func,
+    VkResult                                                          original_result,
+    const DeviceInfo*                                                 device_info,
+    const DeferredOperationKHRInfo*                                   deferred_operation_info,
+    StructPointerDecoder<Decoded_VkCopyAccelerationStructureInfoKHR>* pInfo)
+{
+    auto  device                 = device_info->handle;
+    auto  deferred_operation     = deferred_operation_info->handle;
+    auto* copy_accel_struct_info = pInfo->GetPointer();
+
+    auto replay_result = func(device, deferred_operation, copy_accel_struct_info);
+
+    if ((deferred_operation != VK_NULL_HANDLE) &&
+        ((replay_result == VK_OPERATION_DEFERRED_KHR) || (replay_result == VK_OPERATION_NOT_DEFERRED_KHR)))
+    {
+        ProcessDeferredOperation(device, deferred_operation);
+    }
+    return replay_result;
+}
+
 void VulkanReplayConsumerBase::MapDescriptorUpdateTemplateHandles(
     const DescriptorUpdateTemplateInfo* update_template_info, DescriptorUpdateTemplateDecoder* decoder)
 {

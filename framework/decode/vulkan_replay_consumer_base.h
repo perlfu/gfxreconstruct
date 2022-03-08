@@ -875,6 +875,22 @@ class VulkanReplayConsumerBase : public VulkanConsumer
                                                    const DeviceInfo*                   device_info,
                                                    const DeferredOperationKHRInfo*     deferred_operation_info);
 
+    VkResult OverrideBuildAccelerationStructuresKHR(
+        PFN_vkBuildAccelerationStructuresKHR                                       func,
+        VkResult                                                                   original_result,
+        const DeviceInfo*                                                          device_info,
+        const DeferredOperationKHRInfo*                                            deferred_operation_info,
+        uint32_t                                                                   infoCount,
+        StructPointerDecoder<Decoded_VkAccelerationStructureBuildGeometryInfoKHR>* pInfos,
+        StructPointerDecoder<Decoded_VkAccelerationStructureBuildRangeInfoKHR*>*   ppBuildRangeInfos);
+
+    VkResult
+    OverrideCopyAccelerationStructureKHR(PFN_vkCopyAccelerationStructureKHR func,
+                                         VkResult                           original_result,
+                                         const DeviceInfo*                  device_info,
+                                         const DeferredOperationKHRInfo*    deferred_operation_info,
+                                         StructPointerDecoder<Decoded_VkCopyAccelerationStructureInfoKHR>* pInfo);
+
   private:
     void RaiseFatalError(const char* message) const;
 

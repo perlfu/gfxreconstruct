@@ -80,6 +80,16 @@ class VulkanAsciiConsumerBase : public VulkanConsumer
         StructPointerDecoder<Decoded_VkAccelerationStructureBuildGeometryInfoKHR>* pInfos,
         StructPointerDecoder<Decoded_VkAccelerationStructureBuildRangeInfoKHR*>*   ppBuildRangeInfos) override;
 
+    virtual void Process_vkBuildAccelerationStructuresKHR(
+        const ApiCallInfo&                                                         call_info,
+        VkResult                                                                   returnValue,
+        format::HandleId                                                           device,
+        format::HandleId                                                           deferredOperation,
+        uint32_t                                                                   infoCount,
+        StructPointerDecoder<Decoded_VkAccelerationStructureBuildGeometryInfoKHR>* pInfos,
+        StructPointerDecoder<Decoded_VkAccelerationStructureBuildRangeInfoKHR*>*   ppBuildRangeInfos) override;
+
+
     virtual void Process_vkCmdPushDescriptorSetWithTemplateKHR(const ApiCallInfo& call_info,
                                                                format::HandleId   commandBuffer,
                                                                format::HandleId   descriptorUpdateTemplate,

@@ -80,6 +80,8 @@
     "vkGetRayTracingShaderGroupHandlesKHR": "OverrideGetRayTracingShaderGroupHandlesKHR",
     "vkGetDeferredOperationMaxConcurrencyKHR": "OverrideGetDeferredOperationMaxConcurrencyKHR",
     "vkDeferredOperationJoinKHR": "OverrideDeferredOperationJoinKHR",
-    "vkGetDeferredOperationResultKHR": "OverrideGetDeferredOperationResultKHR"
+    "vkGetDeferredOperationResultKHR": "OverrideGetDeferredOperationResultKHR",
+    "vkBuildAccelerationStructuresKHR": "OverrideBuildAccelerationStructuresKHR",
+    "vkCopyAccelerationStructureKHR": "OverrideCopyAccelerationStructureKHR"
   }
 }

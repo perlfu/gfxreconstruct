@@ -183,6 +183,46 @@ void VulkanAsciiConsumerBase::Process_vkCmdBuildAccelerationStructuresKHR(
     );
 }
 
+void VulkanAsciiConsumerBase::Process_vkBuildAccelerationStructuresKHR(
+        const ApiCallInfo&                                                         call_info,
+        VkResult                                                                   returnValue,
+        format::HandleId                                                           device,
+        format::HandleId                                                           deferredOperation,
+        uint32_t                                                                   infoCount,
+        StructPointerDecoder<Decoded_VkAccelerationStructureBuildGeometryInfoKHR>* pInfos,
+        StructPointerDecoder<Decoded_VkAccelerationStructureBuildRangeInfoKHR*>*   ppBuildRangeInfos
+)
+{
+    using namespace gfxrecon::util;
+    ToStringFlags toStringFlags = kToString_Default;
+    uint32_t tabCount = 0;
+    uint32_t tabSize = 4;
+    WriteApiCallToFile(call_info, "vkBuildAccelerationStructuresKHR", toStringFlags, tabCount, tabSize,
+        [&](std::stringstream& strStrm)
+        {
+            FieldToString(strStrm, true, "return", toStringFlags, tabCount, tabSize, '"' + ToString(returnValue, toStringFlags, tabCount, tabSize) + '"');
+            FieldToString(strStrm, false, "device", toStringFlags, tabCount, tabSize, HandleIdToString(device));
+            FieldToString(strStrm, false, "deferredOperation", toStringFlags, tabCount, tabSize, HandleIdToString(deferredOperation));
+            FieldToString(strStrm, false, "infoCount", toStringFlags, tabCount, tabSize, ToString(infoCount, toStringFlags, tabCount, tabSize));
+            FieldToString(strStrm, false, "pInfos", toStringFlags, tabCount, tabSize, PointerDecoderArrayToString(infoCount, pInfos, toStringFlags, tabCount, tabSize));
+            auto pDecodedInfos = pInfos ? pInfos->GetPointer() : nullptr;
+            auto ppDecodedBuildRangeInfos = ppBuildRangeInfos ? ppBuildRangeInfos->GetPointer() : nullptr;
+            FieldToString(strStrm, false, "ppBuildRangeInfos", toStringFlags, tabCount, tabSize,
+                ArrayToString(infoCount, pInfos, toStringFlags, tabCount++, tabSize,
+                    [&]()
+                    {
+                        return infoCount && pDecodedInfos && ppDecodedBuildRangeInfos;
+                    },
+                    [&](uint32_t info_i)
+                    {
+                        return ArrayToString(pDecodedInfos[info_i].geometryCount, ppDecodedBuildRangeInfos[info_i], toStringFlags, tabCount--, tabSize);
+                    }
+                )
+            );
+        }
+    );
+}
+
 void VulkanAsciiConsumerBase::Process_vkGetAccelerationStructureBuildSizesKHR(
     const ApiCallInfo&               call_info,
     format::HandleId device,

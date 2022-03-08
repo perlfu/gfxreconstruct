@@ -72,6 +72,19 @@ void VulkanAsciiConsumer::Process_vkCmdBuildAccelerationStructuresKHR(
         call_info, commandBuffer, infoCount, pInfos, ppBuildRangeInfos);
 }
 
+void VulkanAsciiConsumer::Process_vkBuildAccelerationStructuresKHR(
+    const ApiCallInfo&                                                         call_info,
+    VkResult                                                                   returnValue,
+    format::HandleId                                                           device,
+    format::HandleId                                                           deferredOperation,
+    uint32_t                                                                   infoCount,
+    StructPointerDecoder<Decoded_VkAccelerationStructureBuildGeometryInfoKHR>* pInfos,
+    StructPointerDecoder<Decoded_VkAccelerationStructureBuildRangeInfoKHR*>*   ppBuildRangeInfos)
+{
+    VulkanAsciiConsumerBase::Process_vkBuildAccelerationStructuresKHR(
+        call_info, returnValue, device, deferredOperation, infoCount, pInfos, ppBuildRangeInfos);
+}
+
 void VulkanAsciiConsumer::Process_vkGetAccelerationStructureBuildSizesKHR(
     const ApiCallInfo&                                                         call_info,
     format::HandleId                                                           device,

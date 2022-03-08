@@ -47,17 +47,6 @@ VKAPI_ATTR void VKAPI_CALL UpdateDescriptorSetWithTemplateKHR(VkDevice          
                                                               VkDescriptorUpdateTemplate descriptorUpdateTemplate,
                                                               const void*                pData);
 
-VKAPI_ATTR VkResult VKAPI_CALL
-BuildAccelerationStructuresKHR(VkDevice                                               device,
-                               VkDeferredOperationKHR                                 deferredOperation,
-                               uint32_t                                               infoCount,
-                               const VkAccelerationStructureBuildGeometryInfoKHR*     pInfos,
-                               const VkAccelerationStructureBuildRangeInfoKHR* const* ppRangeInfos);
-
-VKAPI_ATTR VkResult VKAPI_CALL CopyAccelerationStructureKHR(VkDevice                                  device,
-                                                            VkDeferredOperationKHR                    deferredOperation,
-                                                            const VkCopyAccelerationStructureInfoKHR* pInfo);
-
 GFXRECON_END_NAMESPACE(encode)
 GFXRECON_END_NAMESPACE(gfxrecon)
 

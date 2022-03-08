@@ -78,6 +78,7 @@ class VulkanAsciiConsumerBodyGenerator(BaseGenerator):
             'vkAllocateDescriptorSets',
             'vkCmdBuildAccelerationStructuresIndirectKHR',
             'vkCmdBuildAccelerationStructuresKHR',
+            'vkBuildAccelerationStructuresKHR',
             'vkGetAccelerationStructureBuildSizesKHR',
         }
 

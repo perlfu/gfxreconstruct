@@ -3433,6 +3433,22 @@ class VulkanReplayConsumer : public VulkanReplayConsumerBase
         PointerDecoder<uint32_t>*                   pIndirectStrides,
         PointerDecoder<uint32_t*>*                  ppMaxPrimitiveCounts) override;
 
+    virtual void Process_vkBuildAccelerationStructuresKHR(
+        const ApiCallInfo&                          call_info,
+        VkResult                                    returnValue,
+        format::HandleId                            device,
+        format::HandleId                            deferredOperation,
+        uint32_t                                    infoCount,
+        StructPointerDecoder<Decoded_VkAccelerationStructureBuildGeometryInfoKHR>* pInfos,
+        StructPointerDecoder<Decoded_VkAccelerationStructureBuildRangeInfoKHR*>* ppBuildRangeInfos) override;
+
+    virtual void Process_vkCopyAccelerationStructureKHR(
+        const ApiCallInfo&                          call_info,
+        VkResult                                    returnValue,
+        format::HandleId                            device,
+        format::HandleId                            deferredOperation,
+        StructPointerDecoder<Decoded_VkCopyAccelerationStructureInfoKHR>* pInfo) override;
+
     virtual void Process_vkCopyAccelerationStructureToMemoryKHR(
         const ApiCallInfo&                          call_info,
         VkResult                                    returnValue,
